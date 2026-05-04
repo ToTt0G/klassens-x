@@ -228,7 +228,7 @@ export default function VotingPage({ params, searchParams }: Props) {
                 </div>
 
                 <div className="text-center mb-6 border-b-4 border-black pb-4 border-dashed">
-                  <h2 className="font-[family-name:var(--font-body)] text-2xl font-bold">
+                  <h2 className="font-[family-name:var(--font-body)] text-2xl font-bold break-words">
                     {currentStudent.name}
                   </h2>
                 </div>

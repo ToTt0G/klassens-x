@@ -53,18 +53,18 @@ function StudentCard({
       {/* Duct tape top center */}
       <div className="duct-tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-2 z-10 absolute"></div>
 
-      <div className="flex items-start gap-3 pt-3 relative z-0">
+      <div className="flex flex-col sm:flex-row items-center gap-4 pt-3 relative z-0">
         {/* Avatar */}
-        <div className="w-11 h-11 flex items-center justify-center font-black text-lg border-3 border-black shrink-0 bg-black text-white">
+        <div className="w-16 h-16 sm:w-11 sm:h-11 flex items-center justify-center font-black text-2xl sm:text-lg border-3 border-black shrink-0 bg-black text-white neubrutalist-shadow-sm">
           {student.name.charAt(0).toUpperCase()}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-base mb-1 truncate font-[family-name:var(--font-headline)] leading-tight">
+        <div className="flex-1 min-w-0 text-center sm:text-left">
+          <p className="font-bold text-xl sm:text-base mb-1 line-clamp-2 break-words font-[family-name:var(--font-headline)] leading-tight">
             {student.name}
           </p>
           {statsResult === undefined ? (
-            <div className="h-4 w-20 bg-black/10 animate-pulse border-2 border-black/20 mt-1" />
+            <div className="h-4 w-20 bg-black/10 animate-pulse border-2 border-black/20 mt-1 mx-auto sm:mx-0" />
           ) : (
             <p className="text-xs font-bold uppercase tracking-widest opacity-70 mt-1">
               {hasVotes ? `${statsResult.totalVotes} röst${statsResult.totalVotes !== 1 ? "er" : ""}` : "Inga röster"}
@@ -74,7 +74,7 @@ function StudentCard({
 
         <Link
           href={`/klass/${slug}/rosta?studentId=${student._id}`}
-          className="btn-secondary !px-3 !py-1 !text-xs self-start -rotate-1"
+          className="btn-secondary !px-6 sm:!px-3 !py-2 sm:!py-1 !text-sm sm:!text-xs self-stretch sm:self-start -rotate-1"
           onClick={(e) => e.stopPropagation()}
         >
           Rösta
@@ -187,32 +187,33 @@ export default function DashboardPage({ params }: Props) {
           <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
           <div className="flex flex-col gap-6">
-            {/* Top row: Info & Action */}
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4 flex-wrap">
-                <Link href={`/klass/${slug}`} className="btn-secondary rotate-2 shrink-0">
+            {/* Top Row: Back, Title, and Actions */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto">
+                <Link href={`/klass/${slug}`} className="btn-secondary !px-4 !py-2 !text-sm sm:!text-base rotate-2 shrink-0 self-start sm:self-center">
                   ← Bakåt
                 </Link>
-                <div className="flex-1 min-w-[200px]">
-                  <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-none mb-2">
+                <div className="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 w-full sm:w-auto">
+                  <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[3px_3px_0_rgba(0,0,0,1)] leading-none mb-2 truncate w-full">
                     {klass.name}
                   </h1>
-                  <p className="font-bold text-on-background bg-secondary-fixed inline-block px-2 border-2 border-black neubrutalist-shadow-sm text-sm uppercase">
+                  <p className="font-bold text-on-background bg-secondary-fixed inline-block px-3 py-1 border-3 border-black neubrutalist-shadow-sm text-xs sm:text-sm uppercase -rotate-1">
                     {students.length} ELEVER
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full lg:w-auto">
                 <button
                   id="dashboard-share-btn"
                   onClick={handleShare}
-                  className="btn-secondary -rotate-1"
+                  className="btn-secondary !py-2 lg:!py-3 !px-4 !text-sm sm:!text-base -rotate-1 w-full sm:w-auto"
                 >
                   {copied ? "✓ Kopierad!" : "🔗 Dela länk"}
                 </button>
                 <Link
                   href={`/klass/${slug}/rosta`}
-                  className="btn-primary rotate-1"
+                  className="btn-primary !py-2 lg:!py-3 !px-4 !text-sm sm:!text-base rotate-1 w-full sm:w-auto"
                 >
                   🗳 Rösta
                 </Link>
@@ -221,8 +222,8 @@ export default function DashboardPage({ params }: Props) {
 
             {/* Bottom row: Controls */}
             <div className="flex flex-col gap-4 border-t-4 border-black border-dashed pt-6 mt-2">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="w-full sm:max-w-md">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                <div className="flex-1 w-full">
                   <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
                   <input
                     id="dashboard-search"
@@ -234,17 +235,18 @@ export default function DashboardPage({ params }: Props) {
                   />
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 w-full lg:w-auto">
                   <button
                     id="dashboard-add-student-btn"
-                    className="btn-secondary rotate-1 !text-xs"
+                    className="btn-secondary rotate-1 !text-xs !py-3 px-6 flex-1 lg:flex-none"
                     onClick={() => { setShowAddStudent((v) => !v); setAddError(""); }}
                   >
                     {showAddStudent ? "× Avbryt" : "➕ Ny elev"}
                   </button>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg]">
-                    <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
-                    Live Uppdatering
+                  <div className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface-bright border-4 border-black font-bold text-[10px] sm:text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg] flex-1 lg:flex-none">
+                    <span className="w-2.5 h-2.5 rounded-full bg-error border-2 border-black animate-pulse" />
+                    <span className="hidden sm:inline">Live Uppdatering</span>
+                    <span className="sm:hidden">Live</span>
                   </div>
                 </div>
               </div>

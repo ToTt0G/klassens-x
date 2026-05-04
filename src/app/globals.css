@@ -52,10 +52,17 @@ body {
   font-family: var(--font-body);
   min-height: 100svh;
   margin: 0;
+  padding: 1rem;
   line-height: 1.5;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  body {
+    padding: 1.5rem;
+  }
 }
 
 @media (min-width: 768px) {

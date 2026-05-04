@@ -69,7 +69,7 @@ export default function ClassHubPage({ params }: Props) {
           </div>
 
           <p className="text-center text-on-background font-medium">
-            Rösta på vem som är <CyclingKlassensTitle /> i din klass.
+            Rösta på vem som är <CyclingKlassensTitle />
           </p>
 
           {/* Actions */}

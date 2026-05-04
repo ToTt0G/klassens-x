@@ -4,7 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { use } from "react";
 
 interface Props {
@@ -58,6 +58,7 @@ function StudentCard({
 
   return (
     <motion.div
+      layout
       className={`border-4 border-black p-5 neubrutalist-shadow-sm ${getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
       whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px 0px rgba(0,0,0,1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -97,42 +98,46 @@ function StudentCard({
         </Link>
       </div>
 
-      {isExpanded && statsResult !== undefined && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="mt-4 pt-4 border-t-4 border-black border-dashed flex flex-col gap-4 overflow-hidden"
-        >
-          {!hasVotes ? (
-            <p className="text-sm font-bold text-center opacity-70">Ingen har röstat än!</p>
-          ) : (
-            <>
-              <div className="text-center">
-                <p className="font-[family-name:var(--font-headline)] text-2xl uppercase font-black text-primary drop-shadow-[2px_2px_0_rgba(255,255,255,1)] leading-tight">
-                  Klassens {topNickname!.nickname.title}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-6 pb-3 pr-3 pl-1">
-                <div 
-                  className="w-20 h-20 rounded-full border-4 border-black shrink-0 neubrutalist-shadow-sm" 
-                  style={{ background: `conic-gradient(${conicStops})` }} 
-                />
-                <div className="flex-1 w-full space-y-2">
-                  {statsResult.nicknames.map((stat, i) => (
-                    <div key={stat.nickname._id} className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 truncate">
-                        <div className="w-3 h-3 rounded-full border-2 border-black shrink-0" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
-                        <span className="font-bold truncate">{stat.nickname.title}</span>
-                      </div>
-                      <span className="font-black shrink-0">{stat.count}</span>
-                    </div>
-                  ))}
+      <AnimatePresence>
+        {isExpanded && statsResult !== undefined && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="mt-4 pt-4 border-t-4 border-black border-dashed flex flex-col gap-4 overflow-hidden"
+          >
+            {!hasVotes ? (
+              <p className="text-sm font-bold text-center opacity-70">Ingen har röstat än!</p>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="font-[family-name:var(--font-headline)] text-2xl uppercase font-black text-primary drop-shadow-[2px_2px_0_rgba(255,255,255,1)] leading-tight">
+                    Klassens {topNickname!.nickname.title}
+                  </p>
                 </div>
-              </div>
-            </>
-          )}
-        </motion.div>
-      )}
+                <div className="flex flex-col sm:flex-row items-center gap-6 pb-3 pr-3 pl-1">
+                  <div 
+                    className="w-20 h-20 rounded-full border-4 border-black shrink-0 neubrutalist-shadow-sm" 
+                    style={{ background: `conic-gradient(${conicStops})` }} 
+                  />
+                  <div className="flex-1 w-full space-y-2">
+                    {statsResult.nicknames.map((stat, i) => (
+                      <div key={stat.nickname._id} className="flex items-center justify-between gap-2 text-sm">
+                        <div className="flex items-center gap-2 truncate">
+                          <div className="w-3 h-3 rounded-full border-2 border-black shrink-0" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
+                          <span className="font-bold truncate">{stat.nickname.title}</span>
+                        </div>
+                        <span className="font-black shrink-0">{stat.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -268,36 +273,42 @@ export default function DashboardPage({ params }: Props) {
               </div>
 
               {/* Add student inline form */}
-              {showAddStudent && (
-                <form
-                  onSubmit={handleAddStudent}
-                  className="flex gap-3 items-start border-4 border-black border-dashed p-4 bg-secondary-fixed -rotate-1"
-                >
-                  <div className="flex-1">
-                    <label htmlFor="new-student-name" className="sr-only">Elevens namn</label>
-                    <input
-                      id="new-student-name"
-                      type="text"
-                      className="input-field rotate-1 w-full"
-                      placeholder="Elevens namn…"
-                      value={newStudentName}
-                      onChange={(e) => { setNewStudentName(e.target.value); setAddError(""); }}
-                      autoFocus
-                      disabled={adding}
-                    />
-                    {addError && (
-                      <p className="text-xs font-bold text-error mt-1 ml-1">{addError}</p>
-                    )}
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn-primary rotate-1 shrink-0"
-                    disabled={adding || !newStudentName.trim()}
+              <AnimatePresence>
+                {showAddStudent && (
+                  <motion.form
+                    initial={{ opacity: 0, y: -20, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -20, height: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    onSubmit={handleAddStudent}
+                    className="flex gap-3 items-start border-4 border-black border-dashed p-4 bg-secondary-fixed -rotate-1 overflow-hidden"
                   >
-                    {adding ? "Sparar…" : "✓ Lägg till"}
-                  </button>
-                </form>
-              )}
+                    <div className="flex-1">
+                      <label htmlFor="new-student-name" className="sr-only">Elevens namn</label>
+                      <input
+                        id="new-student-name"
+                        type="text"
+                        className="input-field rotate-1 w-full"
+                        placeholder="Elevens namn…"
+                        value={newStudentName}
+                        onChange={(e) => { setNewStudentName(e.target.value); setAddError(""); }}
+                        autoFocus
+                        disabled={adding}
+                      />
+                      {addError && (
+                        <p className="text-xs font-bold text-error mt-1 ml-1">{addError}</p>
+                      )}
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn-primary rotate-1 shrink-0"
+                      disabled={adding || !newStudentName.trim()}
+                    >
+                      {adding ? "Sparar…" : "✓ Lägg till"}
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

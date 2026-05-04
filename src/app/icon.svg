@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100">
+  <!-- Subtle warm drop shadow -->
+  <circle cx="50" cy="52" r="45" fill="#f1f3f5" opacity="0.6"/>
+  
+  <!-- Outer rim of the plate -->
+  <circle cx="50" cy="50" r="45" fill="#f8fdfc" stroke="#e0e7eb" stroke-width="1"/>
+  
+  <!-- Fluted paper edge -->
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#add8e6" stroke-width="8" stroke-dasharray="3 2" opacity="0.8"/>
+  
+  <!-- Inner flat section -->
+  <circle cx="50" cy="50" r="32" fill="#ffffff" stroke="#e0e7eb" stroke-width="2"/>
+
+  <defs>
+    <!-- Path for the arched text -->
+    <path id="textPath" d="M 20 68 A 30 30 0 0 1 80 68" fill="none" />
+  </defs>
+
+  <!-- Arched text with the original multi-colored font -->
+  <text font-family="Comic Sans MS, Arial, sans-serif" font-size="14" font-weight="bold">
+    <textPath href="#textPath" xlink:href="#textPath" startOffset="50%" text-anchor="middle">
+      <tspan fill="#4a90e2">k</tspan><tspan fill="#f5a623">l</tspan><tspan fill="#a0dc67">a</tspan><tspan fill="#bd10e0">s</tspan><tspan fill="#d0021b">s</tspan><tspan fill="#f8e71c">e</tspan><tspan fill="#4a90e2">n</tspan><tspan fill="#a0dc67">s</tspan>
+    </textPath>
+  </text>
+  
+  <!-- Small celebratory confetti-like dots -->
+  <circle cx="20" cy="20" r="1.5" fill="#f5a623" />
+  <circle cx="80" cy="20" r="1.5" fill="#4a90e2" />
+  <circle cx="30" cy="15" r="1" fill="#a0dc67" />
+  <circle cx="70" cy="15" r="1" fill="#bd10e0" />
+  <circle cx="15" cy="85" r="1" fill="#d0021b" />
+  <circle cx="85" cy="85" r="1" fill="#f8e71c" />
+</svg>

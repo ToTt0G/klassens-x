@@ -104,52 +104,57 @@ export default function DashboardPage({ params }: Props) {
   );
 
   return (
-    <main className="flex-grow flex flex-col relative min-h-screen">
-      <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 sm:py-10">
+    <main className="flex-grow flex flex-col relative min-h-screen overflow-x-hidden">
+      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-16 xl:px-24 py-8 sm:py-12">
         
         {/* Header Container */}
-        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">
+        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-12 relative">
           <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
           <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
-          <div className="flex items-center gap-4 flex-wrap">
-            <Link href={`/klass/${slug}`} className="btn-secondary rotate-2 shrink-0">
-              ← Bakåt
-            </Link>
-            <div className="flex-1 min-w-[200px]">
-              <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-none mb-2">
-                {klass.name}
-              </h1>
-              <p className="font-bold text-on-background bg-secondary-fixed inline-block px-2 border-2 border-black neubrutalist-shadow-sm text-sm uppercase">
-                {students.length} ELEVER
-              </p>
+          <div className="flex flex-col gap-6">
+            {/* Top row: Info & Action */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap">
+                <Link href={`/klass/${slug}`} className="btn-secondary rotate-2 shrink-0">
+                  ← Bakåt
+                </Link>
+                <div className="flex-1 min-w-[200px]">
+                  <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-none mb-2">
+                    {klass.name}
+                  </h1>
+                  <p className="font-bold text-on-background bg-secondary-fixed inline-block px-2 border-2 border-black neubrutalist-shadow-sm text-sm uppercase">
+                    {students.length} ELEVER
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/klass/${slug}/rosta`}
+                className="btn-primary rotate-1"
+              >
+                🗳 Rösta
+              </Link>
             </div>
-            <Link
-              href={`/klass/${slug}/rosta`}
-              className="btn-primary rotate-1"
-            >
-              🗳 Rösta
-            </Link>
-          </div>
-        </div>
 
-        {/* Controls row */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div className="w-full sm:w-80">
-            <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
-            <input
-              id="dashboard-search"
-              type="search"
-              className="input-field rotate-1"
-              placeholder="🔍 Sök elev…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+            {/* Bottom row: Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t-4 border-black border-dashed pt-6 mt-2">
+              <div className="w-full sm:max-w-md">
+                <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
+                <input
+                  id="dashboard-search"
+                  type="search"
+                  className="input-field rotate-1"
+                  placeholder="🔍 Sök elev…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg]">
-            <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
-            Live Uppdatering
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg] shrink-0">
+                <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
+                Live Uppdatering
+              </div>
+            </div>
           </div>
         </div>
 
@@ -159,7 +164,7 @@ export default function DashboardPage({ params }: Props) {
             <p className="font-bold text-xl uppercase">Inga elever matchar sökningen. 👻</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-12">
             {filtered.map((student, i) => (
               <StudentCard key={student._id} student={student} rank={i} slug={slug} />
             ))}

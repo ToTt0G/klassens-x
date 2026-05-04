@@ -2,7 +2,7 @@ import CreateClassForm from "@/components/CreateClassForm";
 
 export default function HomePage() {
   return (
-    <main className="flex-grow flex flex-col items-center justify-start sm:justify-center relative min-h-screen pt-12 pb-8 px-4 sm:p-8">
+    <main className="flex-grow flex flex-col items-center justify-start sm:justify-center relative min-h-svh pt-12 pb-8 px-4 sm:p-8 sm:pt-4">
       {/* Decorative Background Elements */}
       <div aria-hidden="true" className="absolute top-10 left-10 w-24 h-24 sm:w-32 sm:h-32 bg-secondary-fixed rotate-12 neubrutalist-shadow-sm sticker-edge flex items-center justify-center -z-10 hidden sm:flex">
         <span className="text-3xl sm:text-5xl text-on-secondary-fixed-variant -rotate-6 font-[family-name:var(--font-headline)] font-black">A+</span>

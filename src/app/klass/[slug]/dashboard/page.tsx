@@ -93,7 +93,7 @@ export default function DashboardPage({ params }: Props) {
 
   if (!klass || !students) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center">
         <div className="spinner border-black" />
       </div>
     );
@@ -104,11 +104,11 @@ export default function DashboardPage({ params }: Props) {
   );
 
   return (
-    <main className="flex-grow flex flex-col relative min-h-screen overflow-x-hidden">
-      <div className="w-full max-w-[1600px] mx-auto px-6 sm:px-12 lg:px-16 xl:px-24 py-8 sm:py-12">
+    <main className="flex-grow flex flex-col relative">
+      <div className="w-full py-6 sm:py-10">
         
         {/* Header Container */}
-        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-12 relative">
+        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">
           <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
           <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 

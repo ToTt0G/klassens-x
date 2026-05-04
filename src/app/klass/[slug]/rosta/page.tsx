@@ -130,7 +130,7 @@ export default function VotingPage({ params }: Props) {
 
   if (!klass || !students || !votedIds || !initialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
@@ -140,7 +140,7 @@ export default function VotingPage({ params }: Props) {
 
   if (queueIndexes.length === 0 && initialized) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 relative">
+      <main className="flex-grow flex flex-col items-center justify-center p-8 relative h-full">
         <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
           <div className="duct-tape w-32 h-8 -top-4 -left-6 -rotate-12"></div>
           <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">🎊</div>
@@ -165,7 +165,7 @@ export default function VotingPage({ params }: Props) {
   };
 
   return (
-    <main className="flex-grow flex flex-col items-center relative min-h-screen px-4 py-6 sm:px-8 sm:py-10">
+    <main className="flex-grow flex flex-col items-center relative h-full px-4 py-6 sm:px-8 sm:py-10">
       <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center gap-6">
         {/* Header / Progress bar */}
         <div className="w-full flex items-center gap-4 border-4 border-black p-3 bg-surface rotate-1 neubrutalist-shadow-sm">

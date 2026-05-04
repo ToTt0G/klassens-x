@@ -14,24 +14,25 @@ export default function ClassHubPage({ params }: Props) {
 
   if (klass === undefined) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div className="spinner" />
+      <div className="flex-grow flex items-center justify-center">
+        <div className="spinner border-black" />
       </div>
     );
   }
 
   if (klass === null) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
-        <div className="glass-card animate-scale-in" style={{ padding: "3rem 2rem", textAlign: "center", maxWidth: 400 }}>
-          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🤔</div>
-          <h1 className="font-outfit" style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.75rem" }}>
+      <main className="flex-grow flex items-center justify-center min-h-svh p-8">
+        <div className="bg-surface-bright border-6 border-black p-10 text-center max-w-md w-full neubrutalist-shadow rotate-1 relative">
+          <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
+          <div className="text-6xl mb-4">🤔</div>
+          <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl font-black uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] mb-4">
             Hittar inte klassen
           </h1>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
+          <p className="text-on-background font-medium mb-8">
             Den här länken verkar inte fungera. Dubbelkolla att du har rätt adress.
           </p>
-          <Link href="/" className="btn-secondary" style={{ textDecoration: "none" }}>
+          <Link href="/" className="btn-secondary w-full -rotate-1">
             ← Tillbaka till startsidan
           </Link>
         </div>
@@ -39,70 +40,44 @@ export default function ClassHubPage({ params }: Props) {
     );
   }
 
-  const studentCount = klass ? 25 : 0; // will be replaced by live count
-
   return (
-    <main style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      <div className="bg-orb bg-orb-violet" />
-      <div className="bg-orb bg-orb-pink" />
+    <main className="flex-grow flex flex-col items-center justify-center relative min-h-svh px-4 py-12">
+      {/* Decorative bg elements */}
+      <div aria-hidden="true" className="absolute top-10 left-10 w-24 h-24 sm:w-32 sm:h-32 bg-secondary-fixed rotate-12 neubrutalist-shadow-sm sticker-edge flex items-center justify-center -z-10 hidden sm:flex">
+        <span className="text-3xl sm:text-5xl text-on-secondary-fixed-variant -rotate-6 font-[family-name:var(--font-headline)] font-black">A+</span>
+      </div>
+      <div aria-hidden="true" className="absolute bottom-20 right-10 w-32 h-32 sm:w-40 sm:h-40 bg-tertiary-fixed -rotate-6 neubrutalist-shadow-sm border-4 border-black p-4 flex items-center justify-center -z-10 hidden sm:flex">
+        <span className="text-5xl sm:text-7xl font-bold">🏆</span>
+        <div className="duct-tape w-16 h-6 -top-2 -left-4 -rotate-45"></div>
+      </div>
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          padding: "2rem 1.25rem",
-        }}
-      >
-        <div className="animate-scale-in" style={{ textAlign: "center", maxWidth: 500, width: "100%" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              padding: "0.35rem 1rem",
-              background: "rgba(124, 58, 237, 0.12)",
-              border: "1px solid rgba(124, 58, 237, 0.3)",
-              borderRadius: "9999px",
-              marginBottom: "1.5rem",
-              fontSize: "0.85rem",
-              color: "#a78bfa",
-              fontWeight: 500,
-            }}
-          >
-            🏆 Klassutmärkelser
-          </div>
+      {/* Main card */}
+      <div className="relative w-full max-w-sm sm:max-w-md bg-surface-bright border-6 border-black neubrutalist-shadow -rotate-1 flex flex-col items-center gap-6 p-8 sm:p-10">
+        <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
+        <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
-          <h1
-            className="font-outfit gradient-text"
-            style={{ fontSize: "clamp(2rem, 6vw, 3rem)", fontWeight: 800, marginBottom: "0.75rem" }}
-          >
+        {/* Class name */}
+        <div className="text-center w-full">
+          <p className="font-[family-name:var(--font-label)] text-xs uppercase tracking-widest font-bold text-on-background opacity-60 mb-2">
+            Du är inbjuden till
+          </p>
+          <h1 className="font-[family-name:var(--font-headline)] text-primary text-4xl sm:text-5xl font-black uppercase drop-shadow-[4px_4px_0_rgba(0,0,0,1)] -rotate-1 leading-none">
             {klass.name}
           </h1>
+        </div>
 
-          <p style={{ color: "var(--text-secondary)", marginBottom: "3rem", fontSize: "1rem" }}>
-            Redo att rösta? Klicka nedan och välj utmärkelser för dina klasskompisar!
-          </p>
+        <p className="text-center text-on-background font-medium">
+          Redo att rösta? Välj utmärkelser för dina klasskompisar — i realtid!
+        </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center" }}>
-            <Link
-              href={`/klass/${slug}/rosta`}
-              className="btn-primary"
-              style={{ width: "100%", maxWidth: 320, textDecoration: "none", fontSize: "1.1rem", padding: "1rem 2rem" }}
-            >
-              🗳 Börja rösta
-            </Link>
-
-            <Link
-              href={`/klass/${slug}/dashboard`}
-              className="btn-secondary"
-              style={{ width: "100%", maxWidth: 320, textDecoration: "none" }}
-            >
-              📊 Se live-dashboard
-            </Link>
-          </div>
+        {/* Actions */}
+        <div className="flex flex-col gap-4 w-full">
+          <Link href={`/klass/${slug}/rosta`} className="btn-primary w-full rotate-1">
+            🗳 Börja rösta
+          </Link>
+          <Link href={`/klass/${slug}/dashboard`} className="btn-secondary w-full -rotate-1">
+            📊 Se live-dashboard
+          </Link>
         </div>
       </div>
     </main>

@@ -1,5 +1,5 @@
 "use client";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
@@ -73,7 +73,7 @@ function StudentCard({
         </div>
 
         <Link
-          href={`/klass/${slug}/rosta`}
+          href={`/klass/${slug}/rosta?studentId=${student._id}`}
           className="btn-secondary !px-3 !py-1 !text-xs self-start -rotate-1"
           onClick={(e) => e.stopPropagation()}
         >
@@ -131,6 +131,39 @@ export default function DashboardPage({ params }: Props) {
   );
 
   const [search, setSearch] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [newStudentName, setNewStudentName] = useState("");
+  const [addError, setAddError] = useState("");
+  const [adding, setAdding] = useState(false);
+  const addStudent = useMutation(api.students.add);
+
+  async function handleAddStudent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!classId || !newStudentName.trim()) return;
+    setAdding(true);
+    setAddError("");
+    try {
+      await addStudent({ classId, name: newStudentName.trim() });
+      setNewStudentName("");
+      setShowAddStudent(false);
+    } catch (err: unknown) {
+      setAddError(err instanceof Error ? err.message : "Något gick fel");
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  async function handleShare() {
+    const url = `${window.location.origin}/klass/${slug}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: klass?.name, url }); } catch { /* cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   if (!klass || !students) {
     return (
@@ -169,32 +202,84 @@ export default function DashboardPage({ params }: Props) {
                   </p>
                 </div>
               </div>
-              <Link
-                href={`/klass/${slug}/rosta`}
-                className="btn-primary rotate-1"
-              >
-                🗳 Rösta
-              </Link>
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  id="dashboard-share-btn"
+                  onClick={handleShare}
+                  className="btn-secondary -rotate-1"
+                >
+                  {copied ? "✓ Kopierad!" : "🔗 Dela länk"}
+                </button>
+                <Link
+                  href={`/klass/${slug}/rosta`}
+                  className="btn-primary rotate-1"
+                >
+                  🗳 Rösta
+                </Link>
+              </div>
             </div>
 
             {/* Bottom row: Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t-4 border-black border-dashed pt-6 mt-2">
-              <div className="w-full sm:max-w-md">
-                <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
-                <input
-                  id="dashboard-search"
-                  type="search"
-                  className="input-field rotate-1"
-                  placeholder="🔍 Sök elev…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+            <div className="flex flex-col gap-4 border-t-4 border-black border-dashed pt-6 mt-2">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="w-full sm:max-w-md">
+                  <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
+                  <input
+                    id="dashboard-search"
+                    type="search"
+                    className="input-field rotate-1"
+                    placeholder="🔍 Sök elev…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    id="dashboard-add-student-btn"
+                    className="btn-secondary rotate-1 !text-xs"
+                    onClick={() => { setShowAddStudent((v) => !v); setAddError(""); }}
+                  >
+                    {showAddStudent ? "× Avbryt" : "➕ Ny elev"}
+                  </button>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg]">
+                    <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
+                    Live Uppdatering
+                  </div>
+                </div>
               </div>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg] shrink-0">
-                <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
-                Live Uppdatering
-              </div>
+              {/* Add student inline form */}
+              {showAddStudent && (
+                <form
+                  onSubmit={handleAddStudent}
+                  className="flex gap-3 items-start border-4 border-black border-dashed p-4 bg-secondary-fixed -rotate-1"
+                >
+                  <div className="flex-1">
+                    <label htmlFor="new-student-name" className="sr-only">Elevens namn</label>
+                    <input
+                      id="new-student-name"
+                      type="text"
+                      className="input-field rotate-1 w-full"
+                      placeholder="Elevens namn…"
+                      value={newStudentName}
+                      onChange={(e) => { setNewStudentName(e.target.value); setAddError(""); }}
+                      autoFocus
+                      disabled={adding}
+                    />
+                    {addError && (
+                      <p className="text-xs font-bold text-error mt-1 ml-1">{addError}</p>
+                    )}
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn-primary rotate-1 shrink-0"
+                    disabled={adding || !newStudentName.trim()}
+                  >
+                    {adding ? "Sparar…" : "✓ Lägg till"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
@@ -211,6 +296,14 @@ export default function DashboardPage({ params }: Props) {
             ))}
           </div>
         )}
+
+        {/* By Luka badge */}
+        <div className="flex justify-center pb-4">
+          <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white -rotate-1">
+            <span className="text-base drop-shadow-sm">❤️</span>
+            <span className="tracking-wide">Av Luka Koehler</span>
+          </div>
+        </div>
       </div>
     </main>
   );

@@ -11,6 +11,7 @@ interface Props {
   data: VoteSlice[];
   studentName: string;
   onNext: () => void;
+  nextButtonText?: string;
 }
 
 const COLORS = [
@@ -20,7 +21,7 @@ const COLORS = [
   "#ffffff", // white
 ];
 
-export default function VotePieChart({ data, studentName, onNext }: Props) {
+export default function VotePieChart({ data, studentName, onNext, nextButtonText = "Nästa elev →" }: Props) {
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   // Build SVG conic gradient segments
@@ -141,7 +142,7 @@ export default function VotePieChart({ data, studentName, onNext }: Props) {
         </div>
 
         <button className="btn-primary w-full -rotate-1" onClick={onNext}>
-          Nästa elev →
+          {nextButtonText}
         </button>
       </div>
     </AnimatePresence>

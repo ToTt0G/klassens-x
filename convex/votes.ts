@@ -15,17 +15,16 @@ export const cast = mutation({
     voterId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Check if this voter already voted for this student
+    // Delete any existing votes from this voter for this student
     const existing = await ctx.db
       .query("votes")
       .withIndex("by_voter_student", (q) =>
         q.eq("voterId", args.voterId).eq("studentId", args.studentId)
       )
-      .first();
+      .collect();
 
-    if (existing) {
-      // Already voted — silently ignore (idempotent)
-      return { alreadyVoted: true };
+    for (const vote of existing) {
+      await ctx.db.delete(vote._id);
     }
 
     // Insert one vote record per nickname

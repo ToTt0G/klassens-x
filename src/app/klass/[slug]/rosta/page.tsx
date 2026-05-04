@@ -8,15 +8,19 @@ import VotePieChart from "@/components/VotePieChart";
 import ProgressBar from "@/components/ProgressBar";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 type Phase = "voting" | "chart" | "done";
 
-export default function VotingPage({ params }: Props) {
+export default function VotingPage({ params, searchParams }: Props) {
   const { slug } = use(params);
+  const searchParamsResolved = use(searchParams);
+  const targetStudentId = searchParamsResolved.studentId as string;
 
   const klass = useQuery(api.classes.getBySlug, { slug });
   const classId = klass?._id;
@@ -45,12 +49,24 @@ export default function VotingPage({ params }: Props) {
   useEffect(() => {
     if (!students || !votedIds || initialized) return;
     const votedSet = new Set(votedIds);
-    const queue = students
-      .map((_, i) => i)
-      .filter((i) => !votedSet.has(students[i]._id));
+    let queue: number[] = [];
+
+    if (targetStudentId) {
+      const index = students.findIndex((s) => s._id === targetStudentId);
+      if (index !== -1) {
+        queue = [index];
+      }
+    }
+
+    if (queue.length === 0 && !targetStudentId) {
+      queue = students
+        .map((_, i) => i)
+        .filter((i) => !votedSet.has(students[i]._id));
+    }
+    
     setQueueIndexes(queue);
     setInitialized(true);
-  }, [students, votedIds, initialized]);
+  }, [students, votedIds, initialized, targetStudentId]);
 
   const [phase, setPhase] = useState<Phase>("voting");
   // Nicknames the voter has selected for the current student (up to 2 existing)
@@ -128,9 +144,15 @@ export default function VotingPage({ params }: Props) {
     advanceQueue();
   }
 
+  const router = useRouter();
+
   function handleNextAfterChart() {
-    setDirection(1);
-    advanceQueue();
+    if (targetStudentId) {
+      router.push(`/klass/${slug}/dashboard`);
+    } else {
+      setDirection(1);
+      advanceQueue();
+    }
   }
 
   if (!klass || !students || !votedIds || !initialized) {
@@ -284,12 +306,13 @@ export default function VotingPage({ params }: Props) {
                     data={studentVotes}
                     studentName={currentStudent.name}
                     onNext={handleNextAfterChart}
+                    nextButtonText={targetStudentId || queueIndexes.length <= 1 ? "Tillbaka till översikt →" : "Nästa elev →"}
                   />
                 ) : (
                   <div className="text-center p-8">
                     <div className="spinner border-black mb-4 mx-auto" />
                     <button className="btn-primary w-full" onClick={handleNextAfterChart}>
-                      Nästa elev →
+                      {targetStudentId || queueIndexes.length <= 1 ? "Tillbaka till översikt →" : "Nästa elev →"}
                     </button>
                   </div>
                 )}

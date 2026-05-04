@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { use } from "react";
+import CyclingKlassensTitle from "@/components/CyclingKlassensTitle";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -67,7 +68,7 @@ export default function ClassHubPage({ params }: Props) {
         </div>
 
         <p className="text-center text-on-background font-medium">
-          Redo att rösta? Välj "Klassens ___" för dina klasskompisar — i realtid!
+          Rösta på vem som är <CyclingKlassensTitle /> i din klass.
         </p>
 
         {/* Actions */}
@@ -79,6 +80,12 @@ export default function ClassHubPage({ params }: Props) {
             📊 Se live-dashboard
           </Link>
         </div>
+      </div>
+
+      {/* By Luka badge */}
+      <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white rotate-1 mt-10 z-10 relative">
+        <span className="text-base drop-shadow-sm">❤️</span>
+        <span className="tracking-wide">Av Luka Koehler</span>
       </div>
     </main>
   );

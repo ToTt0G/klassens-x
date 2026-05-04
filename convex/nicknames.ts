@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 // ─── Fuzzy merge helpers ───────────────────────────────────────
 
@@ -146,12 +147,7 @@ export const getAllStatsForStudent = query({
 
     const nicknameIds = Object.keys(tally);
     const nicknames = await Promise.all(
-      nicknameIds.map((id) =>
-        ctx.db
-          .query("nicknames")
-          .filter((q) => q.eq(q.field("_id"), id))
-          .first()
-      )
+      nicknameIds.map((id) => ctx.db.get(id as Id<"nicknames">))
     );
 
     const stats = nicknames

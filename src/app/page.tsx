@@ -1,4 +1,5 @@
 import CreateClassForm from "@/components/CreateClassForm";
+import CyclingKlassensTitle from "@/components/CyclingKlassensTitle";
 
 export default function HomePage() {
   return (
@@ -7,7 +8,7 @@ export default function HomePage() {
       <div aria-hidden="true" className="absolute top-10 left-10 w-24 h-24 sm:w-32 sm:h-32 bg-secondary-fixed rotate-12 neubrutalist-shadow-sm sticker-edge flex items-center justify-center -z-10 hidden sm:flex">
         <span className="text-3xl sm:text-5xl text-on-secondary-fixed-variant -rotate-6 font-[family-name:var(--font-headline)] font-black">A+</span>
       </div>
-      
+
       <div aria-hidden="true" className="absolute bottom-20 right-10 w-32 h-32 sm:w-40 sm:h-40 bg-tertiary-fixed -rotate-6 neubrutalist-shadow-sm border-4 border-black p-4 flex items-center justify-center -z-10 hidden sm:flex">
         <span className="text-5xl sm:text-7xl font-bold">🏀</span>
         <div className="duct-tape w-16 h-6 -top-2 -left-4 -rotate-45"></div>
@@ -30,7 +31,7 @@ export default function HomePage() {
 
         {/* Description */}
         <p className="text-center text-on-background font-medium mb-2">
-          Skapa en klass, dela länken och låt klasskompisarna rösta på roliga utmärkelser — i realtid!
+          Skapa en klass och rösta på vem som är <CyclingKlassensTitle />
         </p>
 
         {/* Form Container */}
@@ -45,7 +46,7 @@ export default function HomePage() {
           { icon: "⚡", label: "Realtidsuppdateringar", color: "bg-tertiary-fixed", rotate: "-rotate-2" },
           { icon: "🔗", label: "Enkel delningslänk", color: "bg-secondary-fixed", rotate: "rotate-1" },
           { icon: "📊", label: "Live-dashboard", color: "bg-primary text-white", rotate: "rotate-2" },
-          { icon: "🧠", label: "Smart sammanslagning", color: "bg-white", rotate: "-rotate-1" },
+          { icon: "❤️", label: "Av Luka Koehler", color: "bg-white", rotate: "-rotate-1" },
         ].map((f) => (
           <div key={f.label} className={`flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs sm:text-sm font-bold neubrutalist-shadow-sm ${f.color} ${f.rotate}`}>
             <span className="text-base sm:text-lg drop-shadow-sm">{f.icon}</span>

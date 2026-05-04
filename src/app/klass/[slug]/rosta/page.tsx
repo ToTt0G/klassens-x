@@ -210,7 +210,7 @@ export default function VotingPage({ params }: Props) {
 
                 <div className="flex flex-col gap-4 px-2">
                   <p className="text-sm font-bold uppercase tracking-wider text-center bg-secondary-fixed border-2 border-black rotate-1 self-center px-2 py-1 neubrutalist-shadow-sm">
-                    Ge utmärkelser (max 2)
+                    Ge "Klassens ___" (max 2)
                   </p>
                   
                   {/* Existing award chips */}
@@ -230,12 +230,12 @@ export default function VotingPage({ params }: Props) {
                   )}
 
                   <div className="mt-2">
-                    <label htmlFor="custom-award" className="sr-only">Egen utmärkelse (valfritt)</label>
+                    <label htmlFor="custom-award" className="sr-only">Egen "Klassens ___" (valfritt)</label>
                     <input
                       id="custom-award"
                       type="text"
                       className="input-field -rotate-1 text-center font-[family-name:var(--font-label)] uppercase text-sm placeholder:normal-case placeholder:text-surface-dim"
-                      placeholder="Skriv en egen utmärkelse..."
+                      placeholder="Skriv en egen 'Klassens ___'"
                       value={customAwardText}
                       onChange={(e) => setCustomAwardText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") handleVote(); }}

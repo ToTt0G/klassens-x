@@ -25,10 +25,10 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Klassens Tallrikar – Rösta på klassens utmärkelser",
+  title: "Klassens Tallrikar – Rösta på \"Klassens ___\"",
   description:
-    "Skapa en klass, bjud in klasskompisar och rösta på roliga klassutmärkelser som Klassens Pajas, Klassens Solstråle och mer!",
-  keywords: ["klassutmärkelser", "klassröstning", "skola", "klassens pajas"],
+    "Skapa en klass, bjud in klasskompisar och rösta på roliga \"Klassens ___\" som Klassens Pajas, Klassens Solstråle och mer!",
+  keywords: ["klassens", "klassröstning", "skola", "klassens pajas"],
 };
 
 export default function RootLayout({

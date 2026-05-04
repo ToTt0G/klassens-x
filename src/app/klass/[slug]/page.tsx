@@ -67,7 +67,7 @@ export default function ClassHubPage({ params }: Props) {
         </div>
 
         <p className="text-center text-on-background font-medium">
-          Redo att rösta? Välj utmärkelser för dina klasskompisar — i realtid!
+          Redo att rösta? Välj "Klassens ___" för dina klasskompisar — i realtid!
         </p>
 
         {/* Actions */}

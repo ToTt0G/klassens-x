@@ -3,6 +3,7 @@ import { Epilogue, Be_Vietnam_Pro, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const epilogue = Epilogue({
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="bg-brick-texture antialiased">
         <ConvexClientProvider>{children}</ConvexClientProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

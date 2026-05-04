@@ -22,6 +22,11 @@ export const add = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    // SECURITY: Input validation to prevent unbounded memory usage and DoS
+    if (args.name.length > 50) {
+      throw new Error("Student name cannot exceed 50 characters");
+    }
+
     const trimmed = args.name.trim();
     if (!trimmed) throw new Error("Name cannot be empty");
 

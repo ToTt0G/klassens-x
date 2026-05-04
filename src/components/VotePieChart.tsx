@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 interface VoteSlice {
-  awardId: string;
+  nicknameId: string;
   title: string;
   count: number;
 }
@@ -75,7 +75,7 @@ export default function VotePieChart({ data, studentName, onNext }: Props) {
             ) : (
               slices.map((slice, i) => (
                 <motion.path
-                  key={slice.awardId}
+                  key={slice.nicknameId}
                   d={describeArc(slice.start, slice.end)}
                   fill={slice.color}
                   stroke="black"
@@ -120,7 +120,7 @@ export default function VotePieChart({ data, studentName, onNext }: Props) {
         <div className="flex flex-col gap-3 mb-6 bg-surface-container border-4 border-black p-3 rotate-1 neubrutalist-shadow-sm">
           {slices.map((slice, i) => (
             <motion.div
-              key={slice.awardId}
+              key={slice.nicknameId}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.07 }}

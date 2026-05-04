@@ -25,10 +25,6 @@ export default function VotingPage({ params }: Props) {
     api.students.getByClass,
     classId ? { classId } : "skip"
   );
-  const awards = useQuery(
-    api.awards.getByClass,
-    classId ? { classId } : "skip"
-  );
 
   const [voterId, setVoterId] = useState<string>("");
   useEffect(() => {
@@ -40,7 +36,7 @@ export default function VotingPage({ params }: Props) {
     classId && voterId ? { classId, voterId } : "skip"
   );
 
-  const getOrCreateAward = useMutation(api.awards.getOrCreate);
+  const getOrCreateNickname = useMutation(api.nicknames.getOrCreate);
   const castVote = useMutation(api.votes.cast);
 
   const [queueIndexes, setQueueIndexes] = useState<number[]>([]);
@@ -57,22 +53,30 @@ export default function VotingPage({ params }: Props) {
   }, [students, votedIds, initialized]);
 
   const [phase, setPhase] = useState<Phase>("voting");
-  const [selectedAwardIds, setSelectedAwardIds] = useState<Id<"awards">[]>([]);
-  const [customAwardText, setCustomAwardText] = useState("");
-  const [chartData, setChartData] = useState<{ awardId: string; title: string; count: number }[]>([]);
+  // Nicknames the voter has selected for the current student (up to 2 existing)
+  const [selectedNicknameIds, setSelectedNicknameIds] = useState<Id<"nicknames">[]>([]);
+  // Custom nickname the voter is typing in
+  const [customNicknameText, setCustomNicknameText] = useState("");
+  const [chartData, setChartData] = useState<{ nicknameId: string; title: string; count: number }[]>([]);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitting, setSubmitting] = useState(false);
 
   const currentStudentIndex = queueIndexes[0] ?? -1;
   const currentStudent = currentStudentIndex >= 0 ? students?.[currentStudentIndex] : null;
 
+  // Only load nicknames for the current student — each person has their own pool
+  const nicknames = useQuery(
+    api.nicknames.getByStudent,
+    currentStudent ? { studentId: currentStudent._id } : "skip"
+  );
+
   const studentVotes = useQuery(
     api.votes.getByStudent,
     currentStudent ? { studentId: currentStudent._id } : "skip"
   );
 
-  function toggleAward(id: Id<"awards">) {
-    setSelectedAwardIds((prev) => {
+  function toggleNickname(id: Id<"nicknames">) {
+    setSelectedNicknameIds((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
       if (prev.length >= 2) return prev;
       return [...prev, id];
@@ -82,31 +86,32 @@ export default function VotingPage({ params }: Props) {
   const advanceQueue = useCallback(() => {
     setQueueIndexes((prev) => prev.slice(1));
     setPhase("voting");
-    setSelectedAwardIds([]);
-    setCustomAwardText("");
+    setSelectedNicknameIds([]);
+    setCustomNicknameText("");
     setDirection(1);
   }, []);
 
   async function handleVote() {
     if (!currentStudent || !classId || !voterId) return;
-    if (selectedAwardIds.length === 0 && !customAwardText.trim()) return;
+    if (selectedNicknameIds.length === 0 && !customNicknameText.trim()) return;
 
     setSubmitting(true);
     try {
-      const awardIds: Id<"awards">[] = [...selectedAwardIds];
+      const nicknameIds: Id<"nicknames">[] = [...selectedNicknameIds];
 
-      if (customAwardText.trim()) {
-        const customId = await getOrCreateAward({
+      if (customNicknameText.trim()) {
+        const customId = await getOrCreateNickname({
           classId,
-          title: customAwardText.trim(),
+          studentId: currentStudent._id,
+          title: customNicknameText.trim(),
         });
-        awardIds.push(customId);
+        nicknameIds.push(customId);
       }
 
       await castVote({
         classId,
         studentId: currentStudent._id,
-        awardIds,
+        nicknameIds,
         voterId,
       });
 
@@ -158,7 +163,6 @@ export default function VotingPage({ params }: Props) {
     );
   }
 
-  // Get pseudo-random rotation for sticker style based on student _id
   const getAvatarColor = (id: string) => {
     const colors = ["bg-primary text-white", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
     return colors[id.charCodeAt(0) % colors.length];
@@ -193,12 +197,11 @@ export default function VotingPage({ params }: Props) {
                 <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
                 <div className="duct-tape w-24 h-8 -top-4 -right-6 rotate-12"></div>
 
-                {/* Polaroid Photo Placeholder */}
+                {/* Avatar */}
                 <div className={`h-40 sm:h-52 border-4 border-black mb-4 flex items-center justify-center overflow-hidden relative ${getAvatarColor(currentStudent._id)}`}>
                    <div className="text-7xl sm:text-8xl font-black font-[family-name:var(--font-headline)] opacity-90 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
                      {currentStudent.name.charAt(0).toUpperCase()}
                    </div>
-                   {/* Halftone texture overlay */}
                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,black_1px,transparent_1px)]" style={{ backgroundSize: '10px 10px' }}></div>
                 </div>
 
@@ -210,34 +213,34 @@ export default function VotingPage({ params }: Props) {
 
                 <div className="flex flex-col gap-4 px-2">
                   <p className="text-sm font-bold uppercase tracking-wider text-center bg-secondary-fixed border-2 border-black rotate-1 self-center px-2 py-1 neubrutalist-shadow-sm">
-                    Ge "Klassens ___" (max 2)
+                    Klassens ___ (max 2)
                   </p>
-                  
-                  {/* Existing award chips */}
-                  {awards && awards.length > 0 && (
+
+                  {/* Existing nickname chips for this student */}
+                  {nicknames && nicknames.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-3">
-                      {awards.map((award, i) => (
+                      {nicknames.map((nickname, i) => (
                         <button
-                          key={award._id}
-                          className={`award-chip ${(i % 2 === 0) ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedAwardIds.includes(award._id) ? "selected" : ""}`}
-                          onClick={() => toggleAward(award._id)}
-                          disabled={!selectedAwardIds.includes(award._id) && selectedAwardIds.length >= 2}
+                          key={nickname._id}
+                          className={`nickname-chip ${(i % 2 === 0) ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedNicknameIds.includes(nickname._id) ? "selected" : ""}`}
+                          onClick={() => toggleNickname(nickname._id)}
+                          disabled={!selectedNicknameIds.includes(nickname._id) && selectedNicknameIds.length >= 2}
                         >
-                          {selectedAwardIds.includes(award._id) ? "✓ " : ""}{award.title}
+                          {selectedNicknameIds.includes(nickname._id) ? "✓ " : ""}Klassens {nickname.title}
                         </button>
                       ))}
                     </div>
                   )}
 
                   <div className="mt-2">
-                    <label htmlFor="custom-award" className="sr-only">Egen "Klassens ___" (valfritt)</label>
+                    <label htmlFor="custom-nickname" className="sr-only">Klassens ___ (valfritt)</label>
                     <input
-                      id="custom-award"
+                      id="custom-nickname"
                       type="text"
                       className="input-field -rotate-1 text-center font-[family-name:var(--font-label)] uppercase text-sm placeholder:normal-case placeholder:text-surface-dim"
-                      placeholder="Skriv en egen 'Klassens ___'"
-                      value={customAwardText}
-                      onChange={(e) => setCustomAwardText(e.target.value)}
+                      placeholder='Skriv "Klassens ___"...'
+                      value={customNicknameText}
+                      onChange={(e) => setCustomNicknameText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") handleVote(); }}
                     />
                   </div>
@@ -252,7 +255,7 @@ export default function VotingPage({ params }: Props) {
                     </button>
                     <button
                       className="btn-primary flex-1 rotate-1"
-                      disabled={submitting || (selectedAwardIds.length === 0 && !customAwardText.trim())}
+                      disabled={submitting || (selectedNicknameIds.length === 0 && !customNicknameText.trim())}
                       onClick={handleVote}
                     >
                       {submitting ? (

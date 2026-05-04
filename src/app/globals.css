@@ -214,8 +214,8 @@ textarea.input-field {
   font-size: 1rem;
 }
 
-/* ─── Award Chip ────────────────────────────────────────────── */
-.award-chip {
+/* ─── Nickname Chip ─────────────────────────────────────────── */
+.nickname-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -234,17 +234,17 @@ textarea.input-field {
   box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
 }
 
-.award-chip:hover {
+.nickname-chip:hover {
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
 }
 
-.award-chip:active {
+.nickname-chip:active {
   transform: translate(4px, 4px);
   box-shadow: none;
 }
 
-.award-chip.selected {
+.nickname-chip.selected {
   background: var(--color-primary);
   color: white;
 }

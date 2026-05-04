@@ -2,16 +2,16 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
- * Cast votes for a student. A voter can vote for up to 2 existing awards
- * and submit 1 custom award per student. awardIds is already resolved
- * (use awards.getOrCreate before calling this).
+ * Cast votes for a student. A voter can vote for up to 2 existing nicknames
+ * and submit 1 custom nickname per student. nicknameIds are already resolved
+ * (use nicknames.getOrCreate before calling this).
  * Prevents duplicate votes from the same voter for the same student.
  */
 export const cast = mutation({
   args: {
     classId: v.id("classes"),
     studentId: v.id("students"),
-    awardIds: v.array(v.id("awards")), // 1–3 award IDs
+    nicknameIds: v.array(v.id("nicknames")), // 1–3 nickname IDs
     voterId: v.string(),
   },
   handler: async (ctx, args) => {
@@ -28,12 +28,12 @@ export const cast = mutation({
       return { alreadyVoted: true };
     }
 
-    // Insert one vote record per award
-    for (const awardId of args.awardIds) {
+    // Insert one vote record per nickname
+    for (const nicknameId of args.nicknameIds) {
       await ctx.db.insert("votes", {
         classId: args.classId,
         studentId: args.studentId,
-        awardId,
+        nicknameId,
         voterId: args.voterId,
       });
     }
@@ -43,7 +43,7 @@ export const cast = mutation({
 });
 
 /**
- * Get all votes for a student, enriched with award info (for pie chart).
+ * Get all votes for a student, enriched with nickname info (for pie chart).
  */
 export const getByStudent = query({
   args: { studentId: v.id("students") },
@@ -53,21 +53,20 @@ export const getByStudent = query({
       .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
       .collect();
 
-    // Count votes per award
+    // Count votes per nickname
     const tally: Record<string, number> = {};
     for (const vote of votes) {
-      const key = vote.awardId;
-      tally[key] = (tally[key] || 0) + 1;
+      tally[vote.nicknameId] = (tally[vote.nicknameId] || 0) + 1;
     }
 
-    // Enrich with award titles using typed query
+    // Enrich with nickname titles
     const enriched = await Promise.all(
-      Object.entries(tally).map(async ([awardId, count]) => {
-        const award = await ctx.db
-          .query("awards")
-          .filter((q) => q.eq(q.field("_id"), awardId))
+      Object.entries(tally).map(async ([nicknameId, count]) => {
+        const nickname = await ctx.db
+          .query("nicknames")
+          .filter((q) => q.eq(q.field("_id"), nicknameId))
           .first();
-        return { awardId, title: award?.title ?? "Okänd", count };
+        return { nicknameId, title: nickname?.title ?? "Okänd", count };
       })
     );
 
@@ -91,7 +90,6 @@ export const getVotedStudentIds = query({
       )
       .collect();
 
-    // Return unique studentIds
     return [...new Set(votes.map((vote) => vote.studentId))];
   },
 });

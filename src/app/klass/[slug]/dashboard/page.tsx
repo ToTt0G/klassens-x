@@ -22,7 +22,7 @@ function StudentCard({
   rank: number;
   slug: string;
 }) {
-  const topAward = useQuery(api.awards.getTopForStudent, { studentId: student._id });
+  const topNickname = useQuery(api.nicknames.getTopForStudent, { studentId: student._id });
 
   const getCardColor = (id: string) => {
     const colors = ["bg-surface-bright", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
@@ -53,17 +53,17 @@ function StudentCard({
           <p className="font-bold text-base mb-1 truncate font-[family-name:var(--font-headline)] leading-tight">
             {student.name}
           </p>
-          {topAward === undefined ? (
+          {topNickname === undefined ? (
             <div className="h-4 w-20 bg-black/10 animate-pulse border-2 border-black/20 mt-1" />
-          ) : topAward === null ? (
+          ) : topNickname === null ? (
             <p className="text-xs font-bold uppercase tracking-widest opacity-70 mt-1">Inga röster</p>
           ) : (
             <div className="mt-1">
               <p className={`text-sm font-black uppercase truncate ${isTop3 ? 'text-white drop-shadow-md' : 'text-primary'}`}>
-                {topAward.award.title}
+                Klassens {topNickname.nickname.title}
               </p>
               <p className="text-xs font-bold uppercase opacity-80">
-                {topAward.count} röst{topAward.count !== 1 ? "er" : ""}
+                {topNickname.count} röst{topNickname.count !== 1 ? "er" : ""}
               </p>
             </div>
           )}

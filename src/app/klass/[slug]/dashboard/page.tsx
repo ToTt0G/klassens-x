@@ -319,10 +319,15 @@ export default function DashboardPage({ params }: Props) {
 
       {/* By Luka badge */}
       <div className="flex justify-center pb-4 mt-auto">
-        <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white -rotate-1">
+        <a 
+          href="https://portfolio.redsunsetfarm.com" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white -rotate-1 hover:scale-105 transition-transform duration-200"
+        >
           <span className="text-base drop-shadow-sm">❤️</span>
           <span className="tracking-wide">Av Luka Koehler</span>
-        </div>
+        </a>
       </div>
     </main>
   );

@@ -86,10 +86,15 @@ export default function ClassHubPage({ params }: Props) {
 
       {/* By Luka badge */}
       <div className="mt-auto pt-10">
-        <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white rotate-1 z-10 relative">
+        <a 
+          href="https://portfolio.redsunsetfarm.com" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white rotate-1 z-10 relative hover:scale-105 transition-transform duration-200"
+        >
           <span className="text-base drop-shadow-sm">❤️</span>
           <span className="tracking-wide">Av Luka Koehler</span>
-        </div>
+        </a>
       </div>
     </main>
   );

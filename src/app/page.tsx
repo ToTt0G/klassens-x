@@ -52,13 +52,30 @@ export default function HomePage() {
           { icon: "⚡", label: "Realtidsuppdateringar", color: "bg-tertiary-fixed", rotate: "-rotate-2" },
           { icon: "🔗", label: "Enkel delningslänk", color: "bg-secondary-fixed", rotate: "rotate-1" },
           { icon: "📊", label: "Live-dashboard", color: "bg-primary text-white", rotate: "rotate-2" },
-          { icon: "❤️", label: "Av Luka Koehler", color: "bg-white", rotate: "-rotate-1" },
-        ].map((f) => (
-          <div key={f.label} className={`flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs sm:text-sm font-bold neubrutalist-shadow-sm ${f.color} ${f.rotate}`}>
-            <span className="text-base sm:text-lg drop-shadow-sm">{f.icon}</span>
-            <span className="tracking-wide">{f.label}</span>
-          </div>
-        ))}
+          { icon: "❤️", label: "Av Luka Koehler", color: "bg-white", rotate: "-rotate-1", href: "https://portfolio.redsunsetfarm.com" },
+        ].map((f) => {
+          const className = `flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs sm:text-sm font-bold neubrutalist-shadow-sm ${f.color} ${f.rotate} h-full`;
+          const Inner = (
+            <>
+              <span className="text-base sm:text-lg drop-shadow-sm">{f.icon}</span>
+              <span className="tracking-wide">{f.label}</span>
+            </>
+          );
+
+          if (f.href) {
+            return (
+              <a key={f.label} href={f.href} target="_blank" rel="noopener noreferrer" className={`${className} hover:scale-105 transition-transform duration-200 block decoration-none`}>
+                {Inner}
+              </a>
+            );
+          }
+
+          return (
+            <div key={f.label} className={className}>
+              {Inner}
+            </div>
+          );
+        })}
       </div>
     </main>
   );

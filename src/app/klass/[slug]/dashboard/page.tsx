@@ -105,7 +105,7 @@ export default function DashboardPage({ params }: Props) {
 
   return (
     <main className="flex-grow flex flex-col relative">
-      <div className="w-full py-6 sm:py-10">
+      <div className="w-full pb-6 pt-2 sm:pb-10 sm:pt-0">
         
         {/* Header Container */}
         <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">

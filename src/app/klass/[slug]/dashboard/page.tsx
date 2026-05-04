@@ -22,8 +22,24 @@ function StudentCard({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getCardColor = (id: string) => {
-    const colors = ["bg-surface-bright", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
-    return colors[id.charCodeAt(0) % colors.length];
+    const s = String(id);
+    const colors = [
+      "bg-card-yellow",
+      "bg-card-blue",
+      "bg-card-pink",
+      "bg-card-green",
+      "bg-card-purple",
+      "bg-card-orange",
+      "bg-card-teal",
+      "bg-card-indigo",
+      "bg-card-rose",
+      "bg-card-amber",
+      "bg-card-cyan",
+      "bg-card-lime",
+    ];
+    let sum = 0;
+    for (let i = 0; i < s.length; i++) sum += s.charCodeAt(i);
+    return colors[sum % colors.length];
   };
 
   const hasVotes = statsResult !== undefined && statsResult.totalVotes > 0;
@@ -42,7 +58,7 @@ function StudentCard({
 
   return (
     <motion.div
-      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
+      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${isExpanded ? "bg-expanded-focus" : getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
       whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px 0px rgba(0,0,0,1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{
@@ -182,38 +198,38 @@ export default function DashboardPage({ params }: Props) {
       <div className="w-full pb-6 pt-2 sm:pb-10 sm:pt-0">
         
         {/* Header Container */}
-        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">
+        <div className="bg-surface border-4 sm:border-8 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">
           <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
           <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
           <div className="flex flex-col gap-6">
             {/* Top Row: Back, Title, and Actions */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full md:w-auto">
                 <Link href={`/klass/${slug}`} className="btn-secondary !px-4 !py-2 !text-sm sm:!text-base rotate-2 shrink-0 self-start sm:self-center">
                   ← Bakåt
                 </Link>
-                <div className="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 w-full sm:w-auto">
+                <div className="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 w-full md:w-auto">
                   <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[3px_3px_0_rgba(0,0,0,1)] leading-none mb-2 truncate w-full">
                     {klass.name}
                   </h1>
-                  <p className="font-bold text-on-background bg-secondary-fixed inline-block px-3 py-1 border-3 border-black neubrutalist-shadow-sm text-xs sm:text-sm uppercase -rotate-1">
+                  <p className="font-bold text-on-background bg-secondary-fixed inline-block px-3 py-1 border-4 border-black neubrutalist-shadow-sm text-xs sm:text-sm uppercase -rotate-1">
                     {students.length} ELEVER
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full lg:w-auto">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 w-full md:w-auto">
                 <button
                   id="dashboard-share-btn"
                   onClick={handleShare}
-                  className="btn-secondary !py-2 lg:!py-3 !px-4 !text-sm sm:!text-base -rotate-1 w-full sm:w-auto"
+                  className="btn-secondary !py-2 md:!py-3 !px-4 !text-sm sm:!text-base -rotate-1 w-full sm:w-auto"
                 >
                   {copied ? "✓ Kopierad!" : "🔗 Dela länk"}
                 </button>
                 <Link
                   href={`/klass/${slug}/rosta`}
-                  className="btn-primary !py-2 lg:!py-3 !px-4 !text-sm sm:!text-base rotate-1 w-full sm:w-auto"
+                  className="btn-primary !py-2 md:!py-3 !px-4 !text-sm sm:!text-base rotate-1 w-full sm:w-auto"
                 >
                   🗳 Rösta
                 </Link>
@@ -222,7 +238,7 @@ export default function DashboardPage({ params }: Props) {
 
             {/* Bottom row: Controls */}
             <div className="flex flex-col gap-4 border-t-4 border-black border-dashed pt-6 mt-2">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex-1 w-full">
                   <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
                   <input
@@ -235,15 +251,15 @@ export default function DashboardPage({ params }: Props) {
                   />
                 </div>
 
-                <div className="flex items-center gap-3 w-full lg:w-auto">
+                <div className="flex items-center gap-3 w-full md:w-auto">
                   <button
                     id="dashboard-add-student-btn"
-                    className="btn-secondary rotate-1 !text-xs !py-3 px-6 flex-1 lg:flex-none"
+                    className="btn-secondary rotate-1 !text-xs !py-3 px-6 flex-1 md:flex-none"
                     onClick={() => { setShowAddStudent((v) => !v); setAddError(""); }}
                   >
                     {showAddStudent ? "× Avbryt" : "➕ Ny elev"}
                   </button>
-                  <div className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface-bright border-4 border-black font-bold text-[10px] sm:text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg] flex-1 lg:flex-none">
+                  <div className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface-bright border-4 border-black font-bold text-[10px] sm:text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg] flex-1 md:flex-none">
                     <span className="w-2.5 h-2.5 rounded-full bg-error border-2 border-black animate-pulse" />
                     <span className="hidden sm:inline">Live Uppdatering</span>
                     <span className="sm:hidden">Live</span>

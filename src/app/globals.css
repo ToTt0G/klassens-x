@@ -32,6 +32,20 @@
   --font-headline: var(--font-epilogue);
   --font-body: var(--font-be-vietnam);
   --font-label: var(--font-space);
+
+  --color-card-yellow: #fef08a;
+  --color-card-blue: #bfdbfe;
+  --color-card-pink: #fbcfe8;
+  --color-card-green: #bbf7d0;
+  --color-card-purple: #ddd6fe;
+  --color-card-orange: #fed7aa;
+  --color-card-teal: #99f6e4;
+  --color-card-indigo: #c7d2fe;
+  --color-card-rose: #fecdd3;
+  --color-card-amber: #fde68a;
+  --color-card-cyan: #a5f3fc;
+  --color-card-lime: #d9f99d;
+  --color-expanded-focus: #f1f89c;
 }
 
 /* ─── Base Reset ────────────────────────────────────────────── */

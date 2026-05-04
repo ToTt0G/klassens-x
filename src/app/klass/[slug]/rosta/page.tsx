@@ -186,8 +186,24 @@ export default function VotingPage({ params, searchParams }: Props) {
   }
 
   const getAvatarColor = (id: string) => {
-    const colors = ["bg-primary text-white", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
-    return colors[id.charCodeAt(0) % colors.length];
+    const s = String(id);
+    const colors = [
+      "bg-card-yellow text-black",
+      "bg-card-blue text-black",
+      "bg-card-pink text-black",
+      "bg-card-green text-black",
+      "bg-card-purple text-black",
+      "bg-card-orange text-black",
+      "bg-card-teal text-black",
+      "bg-card-indigo text-black",
+      "bg-card-rose text-black",
+      "bg-card-amber text-black",
+      "bg-card-cyan text-black",
+      "bg-card-lime text-black",
+    ];
+    let sum = 0;
+    for (let i = 0; i < s.length; i++) sum += s.charCodeAt(i);
+    return colors[sum % colors.length];
   };
 
   return (

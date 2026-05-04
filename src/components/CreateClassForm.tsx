@@ -7,10 +7,18 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type Step = "details" | "students" | "done";
 
-export default function CreateClassForm() {
+export default function CreateClassForm({ 
+  onStepChange 
+}: { 
+  onStepChange?: (step: Step) => void 
+}) {
   const createClass = useMutation(api.classes.create);
 
   const [step, setStep] = useState<Step>("details");
+
+  useEffect(() => {
+    onStepChange?.(step);
+  }, [step, onStepChange]);
   const [className, setClassName] = useState("");
   const [studentText, setStudentText] = useState("");
   const [loading, setLoading] = useState(false);

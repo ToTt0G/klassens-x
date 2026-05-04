@@ -1,7 +1,11 @@
+"use client";
+import { useState } from "react";
 import CreateClassForm from "@/components/CreateClassForm";
 import CyclingKlassensTitle from "@/components/CyclingKlassensTitle";
 
 export default function HomePage() {
+  const [step, setStep] = useState<"details" | "students" | "done">("details");
+
   return (
     <main className="flex-grow flex flex-col items-center justify-start sm:justify-center relative pt-12 pb-8 px-4 sm:p-8 sm:pt-4">
       {/* Decorative Background Elements */}
@@ -30,13 +34,15 @@ export default function HomePage() {
         </div>
 
         {/* Description */}
-        <p className="text-center text-on-background font-medium mb-2">
-          Skapa en klass och rösta på vem som är <CyclingKlassensTitle />
-        </p>
+        {step === "details" && (
+          <p className="text-center text-on-background font-medium mb-2">
+            Skapa en klass och rösta på vem som är <CyclingKlassensTitle />
+          </p>
+        )}
 
         {/* Form Container */}
         <div className="w-full">
-          <CreateClassForm />
+          <CreateClassForm onStepChange={setStep} />
         </div>
       </div>
 

@@ -261,7 +261,7 @@ export default function VotingPage({ params, searchParams }: Props) {
 
                 <div className="text-center mb-6 border-b-4 border-black pb-4 border-dashed">
                   <h2 className="font-[family-name:var(--font-body)] text-2xl font-bold break-words">
-                    {toTitleCase(currentStudent.name)}
+                    {currentStudent.name}
                   </h2>
                 </div>
 

@@ -25,21 +25,28 @@ export const add = mutation({
     const trimmed = args.name.trim();
     if (!trimmed) throw new Error("Name cannot be empty");
 
+    // Normalise to Title Case (e.g. "ERIK svensson" → "Erik Svensson")
+    const titled = trimmed
+      .toLowerCase()
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
     const existing = await ctx.db
       .query("students")
       .withIndex("by_class", (q) => q.eq("classId", args.classId))
       .collect();
 
     const duplicate = existing.find(
-      (s) => s.name.toLowerCase() === trimmed.toLowerCase()
+      (s) => s.name.toLowerCase() === titled.toLowerCase()
     );
-    if (duplicate) throw new Error(`"${trimmed}" är redan tillagd`);
+    if (duplicate) throw new Error(`"${titled}" är redan tillagd`);
 
     const maxOrder = existing.reduce((max, s) => Math.max(max, s.order ?? 0), -1);
 
     return await ctx.db.insert("students", {
       classId: args.classId,
-      name: trimmed,
+      name: titled,
       order: maxOrder + 1,
     });
   },

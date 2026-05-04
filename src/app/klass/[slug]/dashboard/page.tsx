@@ -297,12 +297,13 @@ export default function DashboardPage({ params }: Props) {
           </div>
         )}
 
-        {/* By Luka badge */}
-        <div className="flex justify-center pb-4">
-          <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white -rotate-1">
-            <span className="text-base drop-shadow-sm">❤️</span>
-            <span className="tracking-wide">Av Luka Koehler</span>
-          </div>
+      </div>
+
+      {/* By Luka badge */}
+      <div className="flex justify-center pb-4 mt-auto">
+        <div className="flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs font-bold neubrutalist-shadow-sm bg-white -rotate-1">
+          <span className="text-base drop-shadow-sm">❤️</span>
+          <span className="tracking-wide">Av Luka Koehler</span>
         </div>
       </div>
     </main>

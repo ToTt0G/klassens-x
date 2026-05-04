@@ -43,3 +43,10 @@ next-env.d.ts
 
 # convex generated (auto-created by `npx convex dev`)
 convex_local_backend.sqlite3*
+
+# AI
+.agents/
+.claude/
+.jules/
+AGENTS.md
+CLAUDE.md

@@ -58,7 +58,7 @@ function StudentCard({
 
   return (
     <motion.div
-      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${isExpanded ? "bg-expanded-focus" : getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
+      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
       whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px 0px rgba(0,0,0,1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{

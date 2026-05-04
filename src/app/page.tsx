@@ -2,105 +2,56 @@ import CreateClassForm from "@/components/CreateClassForm";
 
 export default function HomePage() {
   return (
-    <main style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      {/* Ambient background orbs */}
-      <div className="bg-orb bg-orb-violet" />
-      <div className="bg-orb bg-orb-pink" />
+    <main className="flex-grow flex flex-col items-center justify-start sm:justify-center relative min-h-screen pt-12 pb-8 px-4 sm:p-8">
+      {/* Decorative Background Elements */}
+      <div aria-hidden="true" className="absolute top-10 left-10 w-24 h-24 sm:w-32 sm:h-32 bg-secondary-fixed rotate-12 neubrutalist-shadow-sm sticker-edge flex items-center justify-center -z-10 hidden sm:flex">
+        <span className="text-3xl sm:text-5xl text-on-secondary-fixed-variant -rotate-6 font-[family-name:var(--font-headline)] font-black">A+</span>
+      </div>
+      
+      <div aria-hidden="true" className="absolute bottom-20 right-10 w-32 h-32 sm:w-40 sm:h-40 bg-tertiary-fixed -rotate-6 neubrutalist-shadow-sm border-4 border-black p-4 flex items-center justify-center -z-10 hidden sm:flex">
+        <span className="text-5xl sm:text-7xl font-bold">🏀</span>
+        <div className="duct-tape w-16 h-6 -top-2 -left-4 -rotate-45"></div>
+      </div>
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          padding: "2rem 1.25rem",
-        }}
-      >
-        {/* Hero */}
-        <div className="animate-fade-in-up" style={{ textAlign: "center", marginBottom: "3rem", maxWidth: 600 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              padding: "0.35rem 1rem",
-              background: "rgba(124, 58, 237, 0.12)",
-              border: "1px solid rgba(124, 58, 237, 0.3)",
-              borderRadius: "9999px",
-              marginBottom: "1.5rem",
-              fontSize: "0.85rem",
-              color: "#a78bfa",
-              fontWeight: 500,
-            }}
-          >
-            🏆 Klassutmärkelser i realtid
-          </div>
+      <div className="relative shrink-0 w-full max-w-sm sm:max-w-md bg-surface-bright border-6 border-black p-8 sm:p-10 neubrutalist-shadow rotate-1 flex flex-col items-center gap-5 mt-4 sm:mt-0">
+        {/* Duct tape accents */}
+        <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
+        <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
-          <h1
-            className="font-outfit gradient-text"
-            style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)", fontWeight: 800, lineHeight: 1.1, marginBottom: "1.25rem" }}
-          >
-            Klassens Tallrikar
+        {/* Header / Logo Area */}
+        <div className="text-center w-full mb-2">
+          <h1 className="text-5xl sm:text-6xl text-primary drop-shadow-[4px_4px_0_rgba(0,0,0,1)] -rotate-2 font-[family-name:var(--font-headline)] font-black uppercase leading-none">
+            Klassens
           </h1>
-
-          <p
-            style={{
-              fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-              color: "var(--text-secondary)",
-              lineHeight: 1.8,
-              maxWidth: 480,
-              margin: "0 auto",
-            }}
-          >
-            Skapa en klass, dela länken och låt klasskompisarna rösta på roliga utmärkelser — i realtid!
-          </p>
+          <h2 className="text-3xl sm:text-4xl text-on-background bg-secondary-container inline-block px-4 py-1 border-4 border-black rotate-2 neubrutalist-shadow-sm relative z-10 font-[family-name:var(--font-headline)] font-black uppercase leading-tight mt-1">
+            Tallrikar
+          </h2>
         </div>
 
-        {/* Form */}
-        <div
-          className="animate-fade-in-up"
-          style={{ width: "100%", maxWidth: 540, animationDelay: "0.1s", animationFillMode: "both" }}
-        >
+        {/* Description */}
+        <p className="text-center text-on-background font-medium mb-2">
+          Skapa en klass, dela länken och låt klasskompisarna rösta på roliga utmärkelser — i realtid!
+        </p>
+
+        {/* Form Container */}
+        <div className="w-full">
           <CreateClassForm />
         </div>
+      </div>
 
-        {/* Features row */}
-        <div
-          className="animate-fade-in-up"
-          style={{
-            display: "flex",
-            gap: "2rem",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            marginTop: "3rem",
-            animationDelay: "0.2s",
-            animationFillMode: "both",
-          }}
-        >
-          {[
-            { icon: "⚡", label: "Realtidsuppdateringar" },
-            { icon: "🔗", label: "Enkel delningslänk" },
-            { icon: "📊", label: "Live-dashboard" },
-            { icon: "🧠", label: "Smart sammanslagning" },
-          ].map((f) => (
-            <div
-              key={f.label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                fontSize: "0.85rem",
-                color: "var(--text-muted)",
-              }}
-            >
-              <span>{f.icon}</span>
-              <span>{f.label}</span>
-            </div>
-          ))}
-        </div>
+      {/* Features row */}
+      <div className="flex shrink-0 gap-3 sm:gap-4 flex-wrap justify-center mt-20 sm:mt-28 mb-8 max-w-2xl z-10 relative">
+        {[
+          { icon: "⚡", label: "Realtidsuppdateringar", color: "bg-tertiary-fixed", rotate: "-rotate-2" },
+          { icon: "🔗", label: "Enkel delningslänk", color: "bg-secondary-fixed", rotate: "rotate-1" },
+          { icon: "📊", label: "Live-dashboard", color: "bg-primary text-white", rotate: "rotate-2" },
+          { icon: "🧠", label: "Smart sammanslagning", color: "bg-white", rotate: "-rotate-1" },
+        ].map((f) => (
+          <div key={f.label} className={`flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs sm:text-sm font-bold neubrutalist-shadow-sm ${f.color} ${f.rotate}`}>
+            <span className="text-base sm:text-lg drop-shadow-sm">{f.icon}</span>
+            <span className="tracking-wide">{f.label}</span>
+          </div>
+        ))}
       </div>
     </main>
   );

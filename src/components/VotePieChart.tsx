@@ -14,12 +14,10 @@ interface Props {
 }
 
 const COLORS = [
-  "#a78bfa", // violet
-  "#f472b6", // pink
-  "#fbbf24", // amber
-  "#34d399", // emerald
-  "#60a5fa", // blue
-  "#fb923c", // orange
+  "#FF007A", // primary pink
+  "#dfed00", // secondary yellow
+  "#00dbe9", // tertiary cyan
+  "#ffffff", // white
 ];
 
 export default function VotePieChart({ data, studentName, onNext }: Props) {
@@ -46,31 +44,22 @@ export default function VotePieChart({ data, studentName, onNext }: Props) {
     const x2 = cx + r * Math.cos(endRad);
     const y2 = cy + r * Math.sin(endRad);
     const largeArc = end - start > 180 ? 1 : 0;
+    // To give slices hard borders, we draw lines back to the center
     return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
   }
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.35 }}
-        className="glass-card"
-        style={{ padding: "2rem", textAlign: "center" }}
-      >
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.25rem" }}>
+      <div className="flex flex-col text-center w-full relative">
+        <p className="text-sm font-bold uppercase tracking-widest text-on-background mb-1">
           Röster för
         </p>
-        <h3
-          className="font-outfit"
-          style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "1.5rem" }}
-        >
+        <h3 className="font-[family-name:var(--font-headline)] text-2xl font-black mb-6">
           {studentName}
         </h3>
 
         {/* SVG Pie Chart */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+        <div className="flex justify-center mb-6 relative z-10">
           <motion.svg
             viewBox="0 0 200 200"
             width={180}
@@ -78,87 +67,83 @@ export default function VotePieChart({ data, studentName, onNext }: Props) {
             initial={{ rotate: -90, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
+            className="drop-shadow-[6px_6px_0_rgba(0,0,0,1)]"
           >
             {slices.length === 1 ? (
               // Full circle if only one award
-              <circle cx={100} cy={100} r={80} fill={slices[0].color} />
+              <circle cx={100} cy={100} r={80} fill={slices[0].color} stroke="black" strokeWidth="6" />
             ) : (
               slices.map((slice, i) => (
                 <motion.path
                   key={slice.awardId}
                   d={describeArc(slice.start, slice.end)}
                   fill={slice.color}
+                  stroke="black"
+                  strokeWidth="4"
+                  strokeLinejoin="round"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.08 }}
                 />
               ))
             )}
-            {/* Center hole */}
-            <circle cx={100} cy={100} r={40} fill="#0f172a" />
+            {/* Center hole - brutalist style */}
+            <circle cx={100} cy={100} r={40} fill="white" stroke="black" strokeWidth="4" />
+            
             {/* Total count */}
             <text
               x={100}
-              y={97}
+              y={95}
               textAnchor="middle"
-              fill="white"
-              fontSize={18}
-              fontWeight="bold"
-              fontFamily="Inter, sans-serif"
+              fill="black"
+              fontSize={24}
+              fontWeight="900"
+              fontFamily="var(--font-headline)"
             >
               {total}
             </text>
             <text
               x={100}
-              y={113}
+              y={115}
               textAnchor="middle"
-              fill="#94a3b8"
-              fontSize={10}
-              fontFamily="Inter, sans-serif"
+              fill="black"
+              fontSize={12}
+              fontWeight="bold"
+              fontFamily="var(--font-label)"
             >
-              röster
+              RÖSTER
             </text>
           </motion.svg>
         </div>
 
         {/* Legend */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1.75rem" }}>
+        <div className="flex flex-col gap-3 mb-6 bg-surface-container border-4 border-black p-3 rotate-1 neubrutalist-shadow-sm">
           {slices.map((slice, i) => (
             <motion.div
               key={slice.awardId}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 + i * 0.07 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.6rem",
-                textAlign: "left",
-              }}
+              className="flex items-center gap-3 text-left border-b-2 border-black last:border-0 pb-2 last:pb-0"
             >
               <span
-                style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  background: slice.color,
-                  flexShrink: 0,
-                }}
+                className="w-4 h-4 border-2 border-black shrink-0"
+                style={{ background: slice.color }}
               />
-              <span style={{ flex: 1, fontSize: "0.875rem", color: "var(--text-secondary)" }}>
+              <span className="flex-1 text-sm font-bold font-[family-name:var(--font-label)] uppercase">
                 {slice.title}
               </span>
-              <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
+              <span className="text-base font-black font-[family-name:var(--font-headline)]">
                 {Math.round(slice.pct * 100)}%
               </span>
             </motion.div>
           ))}
         </div>
 
-        <button className="btn-primary" style={{ width: "100%" }} onClick={onNext}>
+        <button className="btn-primary w-full -rotate-1" onClick={onNext}>
           Nästa elev →
         </button>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 }

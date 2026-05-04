@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getOrCreateVoterId } from "@/lib/utils";
@@ -8,7 +8,6 @@ import VotePieChart from "@/components/VotePieChart";
 import ProgressBar from "@/components/ProgressBar";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { use } from "react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -44,11 +43,9 @@ export default function VotingPage({ params }: Props) {
   const getOrCreateAward = useMutation(api.awards.getOrCreate);
   const castVote = useMutation(api.votes.cast);
 
-  // Queue of students yet to be voted on
   const [queueIndexes, setQueueIndexes] = useState<number[]>([]);
   const [initialized, setInitialized] = useState(false);
 
-  // Build queue once we have all data
   useEffect(() => {
     if (!students || !votedIds || initialized) return;
     const votedSet = new Set(votedIds);
@@ -69,7 +66,6 @@ export default function VotingPage({ params }: Props) {
   const currentStudentIndex = queueIndexes[0] ?? -1;
   const currentStudent = currentStudentIndex >= 0 ? students?.[currentStudentIndex] : null;
 
-  // Vote data for current student (for pie chart after voting)
   const studentVotes = useQuery(
     api.votes.getByStudent,
     currentStudent ? { studentId: currentStudent._id } : "skip"
@@ -78,7 +74,7 @@ export default function VotingPage({ params }: Props) {
   function toggleAward(id: Id<"awards">) {
     setSelectedAwardIds((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 2) return prev; // max 2 existing
+      if (prev.length >= 2) return prev;
       return [...prev, id];
     });
   }
@@ -99,7 +95,6 @@ export default function VotingPage({ params }: Props) {
     try {
       const awardIds: Id<"awards">[] = [...selectedAwardIds];
 
-      // Resolve custom award via fuzzy merge
       if (customAwardText.trim()) {
         const customId = await getOrCreateAward({
           classId,
@@ -133,10 +128,9 @@ export default function VotingPage({ params }: Props) {
     advanceQueue();
   }
 
-  // ── Loading state ─────────────────────────────────────────────
   if (!klass || !students || !votedIds || !initialized) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="min-h-screen flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
@@ -144,21 +138,19 @@ export default function VotingPage({ params }: Props) {
 
   const votedCount = (students?.length ?? 0) - queueIndexes.length;
 
-  // ── All done ─────────────────────────────────────────────────
   if (queueIndexes.length === 0 && initialized) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", position: "relative" }}>
-        <div className="bg-orb bg-orb-violet" />
-        <div className="bg-orb bg-orb-pink" />
-        <div className="glass-card animate-scale-in" style={{ padding: "3rem 2rem", textAlign: "center", maxWidth: 400, position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>🎊</div>
-          <h1 className="font-outfit gradient-text" style={{ fontSize: "2rem", fontWeight: 800, marginBottom: "0.75rem" }}>
+      <main className="min-h-screen flex items-center justify-center p-8 relative">
+        <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
+          <div className="duct-tape w-32 h-8 -top-4 -left-6 -rotate-12"></div>
+          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">🎊</div>
+          <h1 className="font-[family-name:var(--font-headline)] text-primary text-4xl font-black uppercase mb-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
             Klart!
           </h1>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-            Du har röstat på alla elever i {klass.name}. Kolla in resultatet i dashboarden!
+          <p className="font-medium mb-8 text-on-background">
+            Du har röstat på alla elever i <span className="font-bold border-b-2 border-black">{klass.name}</span>. Kolla in resultatet!
           </p>
-          <Link href={`/klass/${slug}/dashboard`} className="btn-primary" style={{ textDecoration: "none" }}>
+          <Link href={`/klass/${slug}/dashboard`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
             📊 Se resultaten →
           </Link>
         </div>
@@ -166,108 +158,84 @@ export default function VotingPage({ params }: Props) {
     );
   }
 
-  // ── Main voting UI ───────────────────────────────────────────
-  return (
-    <main style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      <div className="bg-orb bg-orb-violet" />
-      <div className="bg-orb bg-orb-pink" />
+  // Get pseudo-random rotation for sticker style based on student _id
+  const getAvatarColor = (id: string) => {
+    const colors = ["bg-primary text-white", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
+    return colors[id.charCodeAt(0) % colors.length];
+  };
 
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          minHeight: "100vh",
-          padding: "2rem 1.25rem",
-        }}
-      >
-        {/* Header */}
-        <div style={{ width: "100%", maxWidth: 500, display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.5rem" }}>
-          <Link href={`/klass/${slug}`} className="btn-ghost" style={{ textDecoration: "none" }}>
+  return (
+    <main className="flex-grow flex flex-col items-center relative min-h-screen px-4 py-6 sm:px-8 sm:py-10">
+      <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center gap-6">
+        {/* Header / Progress bar */}
+        <div className="w-full flex items-center gap-4 border-4 border-black p-3 bg-surface rotate-1 neubrutalist-shadow-sm">
+          <Link href={`/klass/${slug}`} className="btn-secondary !px-2 !py-1 rotate-[-2deg]">
             ←
           </Link>
-          <div style={{ flex: 1 }}>
+          <div className="flex-1">
             <ProgressBar current={votedCount} total={students.length} />
           </div>
         </div>
 
         {/* Card area */}
-        <div style={{ width: "100%", maxWidth: 500 }}>
+        <div className="w-full">
           <AnimatePresence mode="wait">
             {phase === "voting" && currentStudent && (
               <motion.div
                 key={`vote-${currentStudent._id}`}
-                initial={{ opacity: 0, x: direction * 60 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction * -60 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, x: direction * 60, rotate: direction * 5 }}
+                animate={{ opacity: 1, x: 0, rotate: (currentStudent._id.charCodeAt(0) % 5) - 2 }}
+                exit={{ opacity: 0, x: direction * -60, rotate: direction * -5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="w-full relative bg-white p-4 pb-8 neubrutalist-shadow border-4 border-black sticker-edge"
               >
-                <div className="glass-card" style={{ padding: "2rem" }}>
-                  {/* Student name */}
-                  <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                    <div
-                      style={{
-                        width: 72,
-                        height: 72,
-                        borderRadius: "50%",
-                        background: "var(--gradient)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "1.75rem",
-                        margin: "0 auto 1rem",
-                        fontWeight: 800,
-                        color: "white",
-                      }}
-                    >
-                      {currentStudent.name.charAt(0).toUpperCase()}
-                    </div>
-                    <h2 className="font-outfit" style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.25rem" }}>
-                      {currentStudent.name}
-                    </h2>
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                      Välj upp till 2 utmärkelser och/eller skriv en egen
-                    </p>
-                  </div>
+                {/* Tape */}
+                <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
+                <div className="duct-tape w-24 h-8 -top-4 -right-6 rotate-12"></div>
 
+                {/* Polaroid Photo Placeholder */}
+                <div className={`h-40 sm:h-52 border-4 border-black mb-4 flex items-center justify-center overflow-hidden relative ${getAvatarColor(currentStudent._id)}`}>
+                   <div className="text-7xl sm:text-8xl font-black font-[family-name:var(--font-headline)] opacity-90 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+                     {currentStudent.name.charAt(0).toUpperCase()}
+                   </div>
+                   {/* Halftone texture overlay */}
+                   <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,black_1px,transparent_1px)]" style={{ backgroundSize: '10px 10px' }}></div>
+                </div>
+
+                <div className="text-center mb-6 border-b-4 border-black pb-4 border-dashed">
+                  <h2 className="font-[family-name:var(--font-body)] text-2xl font-bold">
+                    {currentStudent.name}
+                  </h2>
+                </div>
+
+                <div className="flex flex-col gap-4 px-2">
+                  <p className="text-sm font-bold uppercase tracking-wider text-center bg-secondary-fixed border-2 border-black rotate-1 self-center px-2 py-1 neubrutalist-shadow-sm">
+                    Ge utmärkelser (max 2)
+                  </p>
+                  
                   {/* Existing award chips */}
                   {awards && awards.length > 0 && (
-                    <div style={{ marginBottom: "1.5rem" }}>
-                      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.75rem", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                        Välj befintliga
-                      </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {awards.map((award) => (
-                          <button
-                            key={award._id}
-                            className={`award-chip ${selectedAwardIds.includes(award._id) ? "selected" : ""}`}
-                            onClick={() => toggleAward(award._id)}
-                            disabled={!selectedAwardIds.includes(award._id) && selectedAwardIds.length >= 2}
-                          >
-                            {selectedAwardIds.includes(award._id) ? "✓ " : ""}{award.title}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      {awards.map((award, i) => (
+                        <button
+                          key={award._id}
+                          className={`award-chip ${(i % 2 === 0) ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedAwardIds.includes(award._id) ? "selected" : ""}`}
+                          onClick={() => toggleAward(award._id)}
+                          disabled={!selectedAwardIds.includes(award._id) && selectedAwardIds.length >= 2}
+                        >
+                          {selectedAwardIds.includes(award._id) ? "✓ " : ""}{award.title}
+                        </button>
+                      ))}
                     </div>
                   )}
 
-                  <div className="divider" style={{ margin: "1.25rem 0" }} />
-
-                  {/* Custom award input */}
-                  <div style={{ marginBottom: "1.5rem" }}>
-                    <label
-                      htmlFor="custom-award"
-                      style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em" }}
-                    >
-                      Egen utmärkelse (valfritt)
-                    </label>
+                  <div className="mt-2">
+                    <label htmlFor="custom-award" className="sr-only">Egen utmärkelse (valfritt)</label>
                     <input
                       id="custom-award"
                       type="text"
-                      className="input-field"
-                      placeholder="t.ex. Klassens Musikant"
+                      className="input-field -rotate-1 text-center font-[family-name:var(--font-label)] uppercase text-sm placeholder:normal-case placeholder:text-surface-dim"
+                      placeholder="Skriv en egen utmärkelse..."
                       value={customAwardText}
                       onChange={(e) => setCustomAwardText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") handleVote(); }}
@@ -275,22 +243,20 @@ export default function VotingPage({ params }: Props) {
                   </div>
 
                   {/* Action buttons */}
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <div className="flex gap-3 mt-6">
                     <button
-                      className="btn-secondary"
-                      style={{ flex: "0 0 auto" }}
+                      className="btn-secondary flex-shrink-0"
                       onClick={handleSkip}
                     >
-                      Hoppa över
+                      Hoppa
                     </button>
                     <button
-                      className="btn-primary"
-                      style={{ flex: 1 }}
+                      className="btn-primary flex-1 rotate-1"
                       disabled={submitting || (selectedAwardIds.length === 0 && !customAwardText.trim())}
                       onClick={handleVote}
                     >
                       {submitting ? (
-                        <><span className="spinner" style={{ width: "1rem", height: "1rem", borderWidth: "2px" }} /> Sparar…</>
+                        <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
                       ) : (
                         "Rösta ✓"
                       )}
@@ -303,11 +269,13 @@ export default function VotingPage({ params }: Props) {
             {phase === "chart" && currentStudent && (
               <motion.div
                 key={`chart-${currentStudent._id}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+                animate={{ opacity: 1, scale: 1, rotate: 1 }}
+                exit={{ opacity: 0, scale: 0.9, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="w-full relative bg-white p-6 neubrutalist-shadow border-4 border-black"
               >
+                <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
                 {studentVotes && studentVotes.length > 0 ? (
                   <VotePieChart
                     data={studentVotes}
@@ -315,10 +283,9 @@ export default function VotingPage({ params }: Props) {
                     onNext={handleNextAfterChart}
                   />
                 ) : (
-                  // Fallback if votes haven't loaded yet
-                  <div className="glass-card" style={{ padding: "2rem", textAlign: "center" }}>
-                    <div className="spinner" style={{ margin: "0 auto 1rem" }} />
-                    <button className="btn-primary" style={{ width: "100%" }} onClick={handleNextAfterChart}>
+                  <div className="text-center p-8">
+                    <div className="spinner border-black mb-4 mx-auto" />
+                    <button className="btn-primary w-full" onClick={handleNextAfterChart}>
                       Nästa elev →
                     </button>
                   </div>

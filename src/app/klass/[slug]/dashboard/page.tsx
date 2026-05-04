@@ -24,47 +24,45 @@ function StudentCard({
 }) {
   const topAward = useQuery(api.awards.getTopForStudent, { studentId: student._id });
 
+  const getCardColor = (id: string) => {
+    const colors = ["bg-surface-bright", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
+    return colors[id.charCodeAt(0) % colors.length];
+  };
+
+  const isTop3 = rank < 3;
+
   return (
     <motion.div
-      className="glass-card"
-      style={{ padding: "1.25rem", cursor: "pointer" }}
-      whileHover={{ scale: 1.02, borderColor: "rgba(139, 92, 246, 0.4)" }}
-      transition={{ duration: 0.15 }}
+      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${isTop3 ? 'bg-primary text-white' : getCardColor(student._id)} relative`}
+      whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px 0px rgba(0,0,0,1)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      style={{
+        rotate: `${(student._id.charCodeAt(1) % 3) - 1}deg`
+      }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+      {/* Duct tape top center */}
+      <div className="duct-tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-2 z-10 absolute"></div>
+
+      <div className="flex items-start gap-3 pt-3 relative z-0">
         {/* Avatar / rank */}
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            background: rank < 3 ? "var(--gradient)" : "rgba(255,255,255,0.08)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: rank < 3 ? "1.2rem" : "1rem",
-            fontWeight: 800,
-            color: "white",
-            flexShrink: 0,
-          }}
-        >
-          {rank < 3 ? MEDAL[rank] : student.name.charAt(0).toUpperCase()}
+        <div className={`w-11 h-11 flex items-center justify-center font-black text-lg border-3 border-black shrink-0 ${isTop3 ? 'bg-white text-black' : 'bg-black text-white'}`}>
+          {isTop3 ? MEDAL[rank] : student.name.charAt(0).toUpperCase()}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.2rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-base mb-1 truncate font-[family-name:var(--font-headline)] leading-tight">
             {student.name}
           </p>
           {topAward === undefined ? (
-            <div style={{ height: 14, width: 80, background: "rgba(255,255,255,0.06)", borderRadius: 4 }} />
+            <div className="h-4 w-20 bg-black/10 animate-pulse border-2 border-black/20 mt-1" />
           ) : topAward === null ? (
-            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Inga röster än</p>
+            <p className="text-xs font-bold uppercase tracking-widest opacity-70 mt-1">Inga röster</p>
           ) : (
-            <div>
-              <p style={{ fontSize: "0.78rem", color: "#a78bfa", fontWeight: 500 }}>
+            <div className="mt-1">
+              <p className={`text-sm font-black uppercase truncate ${isTop3 ? 'text-white drop-shadow-md' : 'text-primary'}`}>
                 {topAward.award.title}
               </p>
-              <p style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+              <p className="text-xs font-bold uppercase opacity-80">
                 {topAward.count} röst{topAward.count !== 1 ? "er" : ""}
               </p>
             </div>
@@ -73,8 +71,7 @@ function StudentCard({
 
         <Link
           href={`/klass/${slug}/rosta`}
-          className="btn-ghost"
-          style={{ fontSize: "0.8rem", padding: "0.3rem 0.6rem", textDecoration: "none", flexShrink: 0 }}
+          className="btn-secondary !px-3 !py-1 !text-xs self-start -rotate-1"
         >
           Rösta
         </Link>
@@ -96,8 +93,8 @@ export default function DashboardPage({ params }: Props) {
 
   if (!klass || !students) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div className="spinner" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="spinner border-black" />
       </div>
     );
   }
@@ -107,85 +104,62 @@ export default function DashboardPage({ params }: Props) {
   );
 
   return (
-    <main style={{ position: "relative", minHeight: "100vh" }}>
-      <div className="bg-orb bg-orb-violet" />
-      <div className="bg-orb bg-orb-pink" />
+    <main className="flex-grow flex flex-col relative min-h-screen">
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 sm:py-10">
+        
+        {/* Header Container */}
+        <div className="bg-surface border-6 border-black p-5 sm:p-8 neubrutalist-shadow -rotate-1 mb-10 relative">
+          <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
+          <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>
 
-      <div style={{ position: "relative", zIndex: 1, padding: "2rem 1.25rem", maxWidth: 1200, margin: "0 auto" }}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
-          <Link href={`/klass/${slug}`} className="btn-ghost" style={{ textDecoration: "none" }}>
-            ←
-          </Link>
-          <div style={{ flex: 1 }}>
-            <h1 className="font-outfit gradient-text" style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 800, lineHeight: 1.2 }}>
-              {klass.name}
-            </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
-              {students.length} elever · live-uppdateringar aktiverade
-            </p>
+          <div className="flex items-center gap-4 flex-wrap">
+            <Link href={`/klass/${slug}`} className="btn-secondary rotate-2 shrink-0">
+              ← Bakåt
+            </Link>
+            <div className="flex-1 min-w-[200px]">
+              <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl sm:text-4xl font-black uppercase drop-shadow-[2px_2px_0_rgba(0,0,0,1)] leading-none mb-2">
+                {klass.name}
+              </h1>
+              <p className="font-bold text-on-background bg-secondary-fixed inline-block px-2 border-2 border-black neubrutalist-shadow-sm text-sm uppercase">
+                {students.length} ELEVER
+              </p>
+            </div>
+            <Link
+              href={`/klass/${slug}/rosta`}
+              className="btn-primary rotate-1"
+            >
+              🗳 Rösta
+            </Link>
           </div>
-          <Link
-            href={`/klass/${slug}/rosta`}
-            className="btn-primary"
-            style={{ textDecoration: "none", fontSize: "0.9rem", padding: "0.625rem 1.25rem" }}
-          >
-            🗳 Rösta
-          </Link>
         </div>
 
-        {/* Search bar */}
-        <div style={{ marginBottom: "1.5rem", maxWidth: 380 }}>
-          <input
-            id="dashboard-search"
-            type="search"
-            className="input-field"
-            placeholder="🔍 Sök elev…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        {/* Controls row */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div className="w-full sm:w-80">
+            <label htmlFor="dashboard-search" className="sr-only">Sök elev</label>
+            <input
+              id="dashboard-search"
+              type="search"
+              className="input-field rotate-1"
+              placeholder="🔍 Sök elev…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-        {/* Live indicator */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.3rem 0.875rem",
-            background: "rgba(34, 197, 94, 0.1)",
-            border: "1px solid rgba(34, 197, 94, 0.25)",
-            borderRadius: "9999px",
-            fontSize: "0.78rem",
-            color: "#4ade80",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: "#22c55e",
-              animation: "fadeIn 1s ease infinite alternate",
-            }}
-          />
-          Live · uppdateras automatiskt
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-bright border-4 border-black font-bold text-xs uppercase tracking-widest neubrutalist-shadow-sm rotate-[-1deg]">
+            <span className="w-3 h-3 rounded-full bg-error border-2 border-black animate-pulse" />
+            Live Uppdatering
+          </div>
         </div>
 
         {/* Grid */}
         {filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "4rem 0", color: "var(--text-muted)" }}>
-            Inga elever matchar sökningen.
+          <div className="text-center py-16 bg-white border-4 border-dashed border-black rotate-1">
+            <p className="font-bold text-xl uppercase">Inga elever matchar sökningen. 👻</p>
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: "1rem",
-            }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
             {filtered.map((student, i) => (
               <StudentCard key={student._id} student={student} rank={i} slug={slug} />
             ))}

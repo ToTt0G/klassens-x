@@ -18,7 +18,6 @@ export default function CreateClassForm() {
   const [slug, setSlug] = useState("");
   const [shareableUrl, setShareableUrl] = useState("");
 
-  // Set the shareable URL after mount to avoid SSR/client hydration mismatch
   useEffect(() => {
     if (slug) {
       setShareableUrl(`${window.location.origin}/klass/${slug}`);
@@ -57,13 +56,13 @@ export default function CreateClassForm() {
   }
 
   const slideVariants = {
-    enter: { opacity: 0, x: 30 },
-    center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -30 },
+    enter: { opacity: 0, x: 30, rotate: 2 },
+    center: { opacity: 1, x: 0, rotate: 0 },
+    exit: { opacity: 0, x: -30, rotate: -2 },
   };
 
   return (
-    <div className="glass-card p-8" style={{ maxWidth: 540, margin: "0 auto" }}>
+    <div className="w-full relative pb-8">
       <AnimatePresence mode="wait">
         {step === "details" && (
           <motion.div
@@ -72,44 +71,36 @@ export default function CreateClassForm() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="flex flex-col gap-6"
           >
-            <h2
-              className="font-outfit gradient-text"
-              style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem" }}
-            >
-              Skapa en klass
-            </h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", fontSize: "0.95rem" }}>
-              Ge klassen ett namn och gå vidare för att lägga till elever.
-            </p>
-
-            <div style={{ marginBottom: "1.5rem" }}>
+            <div className="flex flex-col gap-2">
               <label
                 htmlFor="class-name"
-                style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.5rem", fontWeight: 500 }}
+                className="font-[family-name:var(--font-label)] text-on-background uppercase tracking-widest font-bold flex items-center gap-2 text-sm"
               >
-                Klassens namn
+                🎒 Din Klass
               </label>
-              <input
-                id="class-name"
-                type="text"
-                className="input-field"
-                placeholder="t.ex. 9B Åsenhögsskolan"
-                value={className}
-                onChange={(e) => setClassName(e.target.value)}
-                autoFocus
-                required
-              />
+              <div className="relative">
+                <input
+                  id="class-name"
+                  type="text"
+                  className="input-field text-center uppercase placeholder:normal-case placeholder:text-surface-dim"
+                  placeholder="T.ex. 9B Åsenhögsskolan"
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
             </div>
 
             <button
-              className="btn-primary"
-              style={{ width: "100%" }}
+              className="btn-primary w-full -rotate-1 mt-4"
               disabled={!className.trim()}
               onClick={() => setStep("students")}
             >
-              Nästa →
+              Fortsätt →
             </button>
           </motion.div>
         )}
@@ -121,37 +112,30 @@ export default function CreateClassForm() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="flex flex-col gap-4"
           >
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => setStep("details")}
-              style={{ marginBottom: "1rem" }}
-            >
-              ← Tillbaka
-            </button>
-            <h2
-              className="font-outfit gradient-text"
-              style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem" }}
-            >
-              Lägg till elever
-            </h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", fontSize: "0.95rem" }}>
-              Skriv ett namn per rad. Du kan klistra in en hel lista direkt.
-            </p>
-
-            <div style={{ marginBottom: "0.75rem" }}>
+            <div className="flex items-center justify-between mb-2">
+              <button
+                type="button"
+                className="btn-ghost -rotate-2"
+                onClick={() => setStep("details")}
+              >
+                ← Bakåt
+              </button>
+              {studentNames.length > 0 && (
+                <span className="badge badge-violet rotate-2">
+                  {studentNames.length} elever
+                </span>
+              )}
+            </div>
+            
+            <div className="flex flex-col gap-2">
               <label
                 htmlFor="student-names"
-                style={{ display: "block", color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "0.5rem", fontWeight: 500 }}
+                className="font-[family-name:var(--font-label)] text-on-background uppercase tracking-widest font-bold"
               >
-                Elever
-                {studentNames.length > 0 && (
-                  <span className="badge badge-violet" style={{ marginLeft: "0.5rem" }}>
-                    {studentNames.length} elever
-                  </span>
-                )}
+                Elever (en per rad)
               </label>
               <textarea
                 id="student-names"
@@ -164,22 +148,21 @@ export default function CreateClassForm() {
             </div>
 
             {error && (
-              <p style={{ color: "#f87171", fontSize: "0.875rem", marginBottom: "1rem" }}>
+              <div className="bg-error text-on-error px-4 py-2 border-4 border-black rotate-1 font-bold">
                 ⚠ {error}
-              </p>
+              </div>
             )}
 
             <button
               type="submit"
-              className="btn-primary"
-              style={{ width: "100%" }}
+              className="btn-primary w-full rotate-1 mt-6"
               disabled={loading || studentNames.length < 2}
               onClick={handleSubmit}
             >
               {loading ? (
                 <>
-                  <span className="spinner" style={{ width: "1.1rem", height: "1.1rem", borderWidth: "2px" }} />
-                  Skapar klass…
+                  <span className="spinner border-black" />
+                  Skapar…
                 </>
               ) : (
                 `Skapa klass med ${studentNames.length} elever →`
@@ -195,59 +178,34 @@ export default function CreateClassForm() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.3 }}
-            style={{ textAlign: "center" }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="text-center flex flex-col gap-6 items-center"
           >
-            <div style={{ fontSize: "3.5rem", marginBottom: "1rem" }}>🎉</div>
-            <h2
-              className="font-outfit gradient-text"
-              style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem" }}
-            >
+            <div className="text-6xl rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">🎉</div>
+            <h2 className="font-[family-name:var(--font-headline)] text-3xl font-black uppercase text-primary border-b-4 border-black pb-2 inline-block -rotate-1">
               Klassen är skapad!
             </h2>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", fontSize: "0.95rem" }}>
-              Dela länken med dina klasskompisar så att de kan börja rösta.
+            <p className="font-medium text-on-background">
+              Dela länken nedan så kompisarna kan börja rösta.
             </p>
 
-            {/* Shareable link box */}
-            <div
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid var(--border)",
-                borderRadius: "1rem",
-                padding: "1rem 1.25rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                marginBottom: "1.5rem",
-                textAlign: "left",
-              }}
-            >
-              <span
-                style={{
-                  flex: 1,
-                  fontSize: "0.85rem",
-                  color: "var(--text-secondary)",
-                  wordBreak: "break-all",
-                  fontFamily: "monospace",
-                }}
-              >
+            <div className="w-full bg-surface-bright border-4 border-black p-3 flex items-center gap-3 rotate-1 neubrutalist-shadow-sm text-left">
+              <span className="flex-1 text-sm font-bold font-mono break-all text-on-background">
                 {shareableUrl || `/klass/${slug}`}
               </span>
               <button
                 onClick={copyLink}
-                className="btn-secondary"
-                style={{ flexShrink: 0, padding: "0.4rem 0.875rem", fontSize: "0.85rem" }}
+                className="btn-secondary !text-sm !px-3 !py-1 shrink-0"
               >
                 Kopiera
               </button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <a href={`/klass/${slug}/rosta`} className="btn-primary" style={{ textDecoration: "none" }}>
+            <div className="flex flex-col gap-3 w-full">
+              <a href={`/klass/${slug}/rosta`} className="btn-primary w-full -rotate-1">
                 Börja rösta nu →
               </a>
-              <a href={`/klass/${slug}/dashboard`} className="btn-secondary" style={{ textDecoration: "none" }}>
+              <a href={`/klass/${slug}/dashboard`} className="btn-secondary w-full rotate-1">
                 Se live-dashboard
               </a>
             </div>

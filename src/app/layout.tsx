@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Epilogue, Be_Vietnam_Pro, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "./ConvexClientProvider";
 
-const inter = Inter({
+const epilogue = Epilogue({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-epilogue",
   display: "swap",
+  weight: ["800", "900"],
 });
 
-const outfit = Outfit({
+const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-be-vietnam",
   display: "swap",
+  weight: ["500", "700"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space",
+  display: "swap",
+  weight: ["700"],
 });
 
 export const metadata: Metadata = {
@@ -28,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="sv" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
-      <body className="font-inter antialiased">
+    <html lang="sv" className={`${epilogue.variable} ${beVietnamPro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
+      <body className="bg-brick-texture antialiased">
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>

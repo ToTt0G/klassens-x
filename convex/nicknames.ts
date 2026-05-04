@@ -53,6 +53,12 @@ export const getOrCreate = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
+    // SECURITY: Input validation to prevent DoS via extremely long titles
+    // being processed by the O(M*N) levenshteinDistance function.
+    if (args.title.length > 50) {
+      throw new Error("Nickname title cannot exceed 50 characters");
+    }
+
     const normalized = normalizeTitle(args.title);
 
     // Only look at nicknames already given to THIS student

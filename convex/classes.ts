@@ -21,6 +21,19 @@ export const create = mutation({
     studentNames: v.array(v.string()),
   },
   handler: async (ctx, args) => {
+    // SECURITY: Input validation to prevent DoS via extremely large inputs
+    if (args.name.length > 60) {
+      throw new Error("Class name cannot exceed 60 characters");
+    }
+    if (args.studentNames.length > 100) {
+      throw new Error("Cannot add more than 100 students at once");
+    }
+    for (const studentName of args.studentNames) {
+      if (studentName.length > 50) {
+        throw new Error("Student name cannot exceed 50 characters");
+      }
+    }
+
     const slug = generateSlug(args.name);
 
     const classId = await ctx.db.insert("classes", {

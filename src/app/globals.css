@@ -3,17 +3,17 @@
 @theme {
   --color-background: #f9f9f9;
   --color-on-background: #1b1b1b;
-  
+
   --color-primary: #FF007A;
   --color-primary-container: #e4006c;
   --color-on-primary-container: #fffbff;
-  
+
   --color-secondary: #5d6300;
   --color-secondary-container: #dcea00;
   --color-on-secondary-container: #616700;
   --color-secondary-fixed: #dfed00;
   --color-on-secondary-fixed-variant: #464a00;
-  
+
   --color-tertiary: #00666d;
   --color-tertiary-container: #00818a;
   --color-on-tertiary-container: #f5feff;
@@ -25,17 +25,19 @@
   --color-surface-container: #eeeeee;
   --color-surface-variant: #e2e2e2;
   --color-surface-dim: #dadada;
-  
+
   --color-error: #ef4444;
   --color-on-error: #ffffff;
-  
+
   --font-headline: var(--font-epilogue);
   --font-body: var(--font-be-vietnam);
   --font-label: var(--font-space);
 }
 
 /* ─── Base Reset ────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -56,13 +58,21 @@ body {
 }
 
 @media (min-width: 768px) {
-  body { padding: 2rem; }
+  body {
+    padding: 2rem;
+  }
 }
+
 @media (min-width: 1024px) {
-  body { padding: 3rem; }
+  body {
+    padding: 3rem;
+  }
 }
+
 @media (min-width: 1280px) {
-  body { padding: 4rem; }
+  body {
+    padding: 4rem;
+  }
 }
 
 /* ─── Utility Classes for Locker Chaos ─────────────────────── */
@@ -70,16 +80,16 @@ body {
   position: absolute;
   background-color: rgba(220, 220, 220, 0.8);
   border: 1px solid #999;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
 .neubrutalist-shadow {
-  box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .neubrutalist-shadow-sm {
-  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .sticker-edge {
@@ -92,7 +102,7 @@ body {
 
 .bg-brick-texture {
   background-color: #f9f9f9;
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px);
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.03) 10px, rgba(0, 0, 0, 0.03) 20px);
 }
 
 /* ─── Components ────────────────────────────────────────────── */
@@ -110,14 +120,14 @@ body {
   border: 4px solid black;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 5px 5px 0px 0px rgba(0,0,0,1);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
   text-decoration: none;
   white-space: nowrap;
 }
 
 .btn-primary:hover {
   transform: translate(2px, 2px);
-  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .btn-primary:active {
@@ -129,7 +139,7 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
-  box-shadow: 5px 5px 0px 0px rgba(0,0,0,1);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .btn-secondary {
@@ -146,13 +156,13 @@ body {
   border: 4px solid black;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   text-decoration: none;
 }
 
 .btn-secondary:hover {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .btn-secondary:active {
@@ -178,7 +188,7 @@ body {
 
 .btn-ghost:hover {
   border-color: black;
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* ─── Inputs ────────────────────────────────────────────────── */
@@ -192,7 +202,7 @@ body {
   font-weight: 700;
   font-size: 1rem;
   outline: none;
-  box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05);
+  box-shadow: inset 3px 3px 0px rgba(0, 0, 0, 0.05);
   transition: border-color 0.2s, background 0.2s;
 }
 
@@ -231,12 +241,12 @@ textarea.input-field {
   cursor: pointer;
   transition: all 0.15s;
   user-select: none;
-  box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .nickname-chip:hover {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .nickname-chip:active {
@@ -260,7 +270,7 @@ textarea.input-field {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   border: 2px solid black;
-  box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
 }
 
 .badge-violet {
@@ -275,7 +285,9 @@ textarea.input-field {
 
 /* ─── Animations ────────────────────────────────────────────── */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner {
@@ -288,8 +300,19 @@ textarea.input-field {
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--color-surface-container); border-left: 2px solid black; }
-::-webkit-scrollbar-thumb { background: black; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+::-webkit-scrollbar {
+  width: 8px;
+}
 
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container);
+  border-left: 2px solid black;
+}
+
+::-webkit-scrollbar-thumb {
+  background: black;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

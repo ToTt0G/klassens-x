@@ -125,3 +125,43 @@ export const getTopForStudent = query({
       : null;
   },
 });
+
+/**
+ * Get all nicknames and their vote counts for a student.
+ */
+export const getAllStatsForStudent = query({
+  args: { studentId: v.id("students") },
+  handler: async (ctx, args) => {
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
+      .collect();
+
+    if (votes.length === 0) return { totalVotes: 0, nicknames: [] };
+
+    const tally: Record<string, number> = {};
+    for (const vote of votes) {
+      tally[vote.nicknameId] = (tally[vote.nicknameId] || 0) + 1;
+    }
+
+    const nicknameIds = Object.keys(tally);
+    const nicknames = await Promise.all(
+      nicknameIds.map((id) =>
+        ctx.db
+          .query("nicknames")
+          .filter((q) => q.eq(q.field("_id"), id))
+          .first()
+      )
+    );
+
+    const stats = nicknames
+      .filter((n): n is NonNullable<typeof n> => n !== null)
+      .map((nickname) => ({
+        nickname,
+        count: tally[nickname._id],
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return { totalVotes: votes.length, nicknames: stats };
+  },
+});

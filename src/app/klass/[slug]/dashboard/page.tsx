@@ -11,71 +11,112 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-const MEDAL = ["🥇", "🥈", "🥉"];
-
 function StudentCard({
   student,
-  rank,
   slug,
 }: {
   student: { _id: Id<"students">; name: string };
-  rank: number;
   slug: string;
 }) {
-  const topNickname = useQuery(api.nicknames.getTopForStudent, { studentId: student._id });
+  const statsResult = useQuery(api.nicknames.getAllStatsForStudent, { studentId: student._id });
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const getCardColor = (id: string) => {
     const colors = ["bg-surface-bright", "bg-secondary-fixed text-black", "bg-tertiary-fixed text-black"];
     return colors[id.charCodeAt(0) % colors.length];
   };
 
-  const isTop3 = rank < 3;
+  const hasVotes = statsResult !== undefined && statsResult.totalVotes > 0;
+  const topNickname = hasVotes ? statsResult.nicknames[0] : null;
+
+  // Pie chart colors
+  const pieColors = ["#FF3B30", "#34C759", "#007AFF", "#FF9500", "#AF52DE", "#FF2D55"];
+  
+  let cumulativePercent = 0;
+  const conicStops = hasVotes ? statsResult.nicknames.map((stat, i) => {
+    const percent = (stat.count / statsResult.totalVotes) * 100;
+    const start = cumulativePercent;
+    cumulativePercent += percent;
+    return `${pieColors[i % pieColors.length]} ${start}% ${cumulativePercent}%`;
+  }).join(", ") : "";
 
   return (
     <motion.div
-      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${isTop3 ? 'bg-primary text-white' : getCardColor(student._id)} relative`}
+      className={`border-4 border-black p-5 neubrutalist-shadow-sm ${getCardColor(student._id)} relative cursor-pointer flex flex-col transition-colors duration-200 hover:bg-white`}
       whileHover={{ y: -4, x: -4, boxShadow: "8px 8px 0px 0px rgba(0,0,0,1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{
         rotate: `${(student._id.charCodeAt(1) % 3) - 1}deg`
       }}
+      onClick={() => setIsExpanded(!isExpanded)}
     >
       {/* Duct tape top center */}
       <div className="duct-tape w-16 h-6 -top-3 left-1/2 -translate-x-1/2 rotate-2 z-10 absolute"></div>
 
       <div className="flex items-start gap-3 pt-3 relative z-0">
-        {/* Avatar / rank */}
-        <div className={`w-11 h-11 flex items-center justify-center font-black text-lg border-3 border-black shrink-0 ${isTop3 ? 'bg-white text-black' : 'bg-black text-white'}`}>
-          {isTop3 ? MEDAL[rank] : student.name.charAt(0).toUpperCase()}
+        {/* Avatar */}
+        <div className="w-11 h-11 flex items-center justify-center font-black text-lg border-3 border-black shrink-0 bg-black text-white">
+          {student.name.charAt(0).toUpperCase()}
         </div>
 
         <div className="flex-1 min-w-0">
           <p className="font-bold text-base mb-1 truncate font-[family-name:var(--font-headline)] leading-tight">
             {student.name}
           </p>
-          {topNickname === undefined ? (
+          {statsResult === undefined ? (
             <div className="h-4 w-20 bg-black/10 animate-pulse border-2 border-black/20 mt-1" />
-          ) : topNickname === null ? (
-            <p className="text-xs font-bold uppercase tracking-widest opacity-70 mt-1">Inga röster</p>
           ) : (
-            <div className="mt-1">
-              <p className={`text-sm font-black uppercase truncate ${isTop3 ? 'text-white drop-shadow-md' : 'text-primary'}`}>
-                Klassens {topNickname.nickname.title}
-              </p>
-              <p className="text-xs font-bold uppercase opacity-80">
-                {topNickname.count} röst{topNickname.count !== 1 ? "er" : ""}
-              </p>
-            </div>
+            <p className="text-xs font-bold uppercase tracking-widest opacity-70 mt-1">
+              {hasVotes ? `${statsResult.totalVotes} röst${statsResult.totalVotes !== 1 ? "er" : ""}` : "Inga röster"}
+            </p>
           )}
         </div>
 
         <Link
           href={`/klass/${slug}/rosta`}
           className="btn-secondary !px-3 !py-1 !text-xs self-start -rotate-1"
+          onClick={(e) => e.stopPropagation()}
         >
           Rösta
         </Link>
       </div>
+
+      {isExpanded && statsResult !== undefined && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-4 pt-4 border-t-4 border-black border-dashed flex flex-col gap-4 overflow-hidden"
+        >
+          {!hasVotes ? (
+            <p className="text-sm font-bold text-center opacity-70">Ingen har röstat än!</p>
+          ) : (
+            <>
+              <div className="text-center">
+                <p className="font-[family-name:var(--font-headline)] text-2xl uppercase font-black text-primary drop-shadow-[2px_2px_0_rgba(255,255,255,1)] leading-tight">
+                  Klassens {topNickname!.nickname.title}
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-6 pb-3 pr-3 pl-1">
+                <div 
+                  className="w-20 h-20 rounded-full border-4 border-black shrink-0 neubrutalist-shadow-sm" 
+                  style={{ background: `conic-gradient(${conicStops})` }} 
+                />
+                <div className="flex-1 w-full space-y-2">
+                  {statsResult.nicknames.map((stat, i) => (
+                    <div key={stat.nickname._id} className="flex items-center justify-between gap-2 text-sm">
+                      <div className="flex items-center gap-2 truncate">
+                        <div className="w-3 h-3 rounded-full border-2 border-black shrink-0" style={{ backgroundColor: pieColors[i % pieColors.length] }} />
+                        <span className="font-bold truncate">{stat.nickname.title}</span>
+                      </div>
+                      <span className="font-black shrink-0">{stat.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </motion.div>
+      )}
     </motion.div>
   );
 }
@@ -164,9 +205,9 @@ export default function DashboardPage({ params }: Props) {
             <p className="font-bold text-xl uppercase">Inga elever matchar sökningen. 👻</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-12">
-            {filtered.map((student, i) => (
-              <StudentCard key={student._id} student={student} rank={i} slug={slug} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-12 items-start">
+            {filtered.map((student) => (
+              <StudentCard key={student._id} student={student} slug={slug} />
             ))}
           </div>
         )}

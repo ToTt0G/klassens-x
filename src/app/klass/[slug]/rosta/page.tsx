@@ -10,6 +10,20 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 
+/** Strip a leading "klassens" prefix (any case/spacing) so the stored title is just the descriptor. */
+function stripKlassens(text: string): string {
+  return text.replace(/^klassens\s*/i, "").trim();
+}
+
+/** Title-case a name: each word capitalised, rest lower. */
+function toTitleCase(name: string): string {
+  return name
+    .toLowerCase()
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -116,10 +130,12 @@ export default function VotingPage({ params, searchParams }: Props) {
       const nicknameIds: Id<"nicknames">[] = [...selectedNicknameIds];
 
       if (customNicknameText.trim()) {
+        // Strip any leading "klassens" the user typed so we only store the descriptor
+        const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
         const customId = await getOrCreateNickname({
           classId,
           studentId: currentStudent._id,
-          title: customNicknameText.trim(),
+          title: cleanTitle,
         });
         nicknameIds.push(customId);
       }
@@ -245,7 +261,7 @@ export default function VotingPage({ params, searchParams }: Props) {
 
                 <div className="text-center mb-6 border-b-4 border-black pb-4 border-dashed">
                   <h2 className="font-[family-name:var(--font-body)] text-2xl font-bold break-words">
-                    {currentStudent.name}
+                    {toTitleCase(currentStudent.name)}
                   </h2>
                 </div>
 
@@ -264,7 +280,7 @@ export default function VotingPage({ params, searchParams }: Props) {
                           onClick={() => toggleNickname(nickname._id)}
                           disabled={!selectedNicknameIds.includes(nickname._id) && selectedNicknameIds.length >= 2}
                         >
-                          {selectedNicknameIds.includes(nickname._id) ? "✓ " : ""}Klassens {nickname.title}
+                          {selectedNicknameIds.includes(nickname._id) ? "✓ " : ""}klassens {nickname.title.toLowerCase()}
                         </button>
                       ))}
                     </div>

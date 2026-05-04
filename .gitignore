@@ -42,5 +42,4 @@ yarn-error.log*
 next-env.d.ts
 
 # convex generated (auto-created by `npx convex dev`)
-convex/_generated/
 convex_local_backend.sqlite3*

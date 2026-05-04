@@ -229,7 +229,7 @@ export default function VotingPage({ params, searchParams }: Props) {
                 animate={{ opacity: 1, x: 0, rotate: (currentStudent._id.charCodeAt(0) % 5) - 2 }}
                 exit={{ opacity: 0, x: direction * -60, rotate: direction * -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="w-full relative bg-white p-4 pb-8 neubrutalist-shadow border-4 border-black sticker-edge"
+                className="w-full relative bg-white p-4 pb-8 neubrutalist-shadow border-4 border-black"
               >
                 {/* Tape */}
                 <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>

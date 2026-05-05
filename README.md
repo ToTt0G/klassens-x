@@ -1,4 +1,4 @@
-# Klassens X
+﻿# Klassens Tallrikar
 
 A full-stack web application built for schools and classes to easily organize, manage, and vote on class superlatives/awards (e.g., "Class Clown", "Most Likely to Succeed").
 
@@ -15,7 +15,8 @@ A full-stack web application built for schools and classes to easily organize, m
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Backend & Database**: [Convex](https://www.convex.dev/)
-- **Charts**: [Recharts](https://recharts.org/)
+- **Animations & Charts**: [Framer Motion](https://www.framer.com/motion/) (Custom SVG charts)
+- **Analytics & Performance**: [Vercel Analytics & Speed Insights](https://vercel.com/analytics)
 
 ## Project Structure
 
@@ -36,18 +37,18 @@ Make sure you have [Node.js](https://nodejs.org/) installed.
 ### Installation
 
 1. Clone the repository and install dependencies:
-   ```bash
+   `ash
    npm install
-   ```
+   `
 
 2. Start the Convex backend (this will prompt you to log in and set up a Convex project):
-   ```bash
+   `ash
    npx convex dev
-   ```
+   `
 
 3. In a separate terminal, start the Next.js development server:
-   ```bash
+   `ash
    npm run dev
-   ```
+   `
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.

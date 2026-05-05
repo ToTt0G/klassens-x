@@ -30,6 +30,7 @@ export default function VotePieChart({ data, studentName, onNext, nextButtonText
     const pct = d.count / total;
     const start = cumulativePct * 360;
     const end = (cumulativePct + pct) * 360;
+    // eslint-disable-next-line react-hooks/immutability
     cumulativePct += pct;
     return { ...d, pct, start, end, color: COLORS[i % COLORS.length] };
   });

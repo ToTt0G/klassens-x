@@ -28,6 +28,7 @@ export default function CreateClassForm({
 
   useEffect(() => {
     if (slug) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShareableUrl(`${window.location.origin}/klass/${slug}`);
     }
   }, [slug]);
@@ -51,7 +52,7 @@ export default function CreateClassForm({
       });
       setSlug(result.slug);
       setStep("done");
-    } catch (err) {
+    } catch {
       setError("Något gick fel. Försök igen.");
     } finally {
       setLoading(false);

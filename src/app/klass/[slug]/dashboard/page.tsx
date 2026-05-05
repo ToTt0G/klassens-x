@@ -313,6 +313,19 @@ export default function DashboardPage({ params }: Props) {
           </div>
         </div>
 
+        {/* Spoiler Warning */}
+        <div className="bg-card-yellow border-4 border-black p-4 mb-8 rotate-1 neubrutalist-shadow-sm flex items-start gap-4 relative">
+          <div className="duct-tape w-16 h-6 -top-3 -left-3 -rotate-12 absolute"></div>
+          <div className="duct-tape w-16 h-6 -bottom-3 -right-3 rotate-12 absolute"></div>
+          <div className="text-3xl">⚠️</div>
+          <div>
+            <h2 className="font-[family-name:var(--font-headline)] text-xl font-black uppercase mb-1">Spoiler-varning!</h2>
+            <p className="font-bold text-on-background leading-snug">
+              Här visas det aktuella resultatet för klassen. Klicka på en klasskompis nedan för att se exakt vad folk har röstat på dem!
+            </p>
+          </div>
+        </div>
+
         {/* Grid */}
         {filtered.length === 0 ? (
           <div className="text-center py-16 bg-white border-4 border-dashed border-black rotate-1">

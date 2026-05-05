@@ -92,3 +92,19 @@ export const getVotedStudentIds = query({
     return [...new Set(votes.map((vote) => vote.studentId))];
   },
 });
+
+/**
+ * Get the nickname IDs a voter has voted for a specific student.
+ */
+export const getVoterVotesForStudent = query({
+  args: { studentId: v.id("students"), voterId: v.string() },
+  handler: async (ctx, args) => {
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_voter_student", (q) =>
+        q.eq("voterId", args.voterId).eq("studentId", args.studentId)
+      )
+      .collect();
+    return votes.map((v) => v.nicknameId);
+  },
+});

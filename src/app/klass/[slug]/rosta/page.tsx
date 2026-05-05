@@ -86,6 +86,11 @@ export default function VotingPage({ params, searchParams }: Props) {
       queue = students
         .map((_, i) => i)
         .filter((i) => !votedSet.has(students[i]._id));
+        
+      if (queue.length === 0 && students.length > 0) {
+        // Start over if already voted for everyone
+        queue = students.map((_, i) => i);
+      }
     }
     
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -115,6 +120,18 @@ export default function VotingPage({ params, searchParams }: Props) {
     api.votes.getByStudent,
     currentStudent ? { studentId: currentStudent._id } : "skip"
   );
+
+  const previousVoteIds = useQuery(
+    api.votes.getVoterVotesForStudent,
+    currentStudent && voterId ? { studentId: currentStudent._id, voterId } : "skip"
+  );
+
+  useEffect(() => {
+    if (previousVoteIds && previousVoteIds.length > 0 && phase === "voting" && selectedNicknameIds.length === 0 && customNicknameText === "") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedNicknameIds(previousVoteIds);
+    }
+  }, [previousVoteIds, phase, selectedNicknameIds.length, customNicknameText]);
 
   function toggleNickname(id: Id<"nicknames">) {
     setSelectedNicknameIds((prev) => {

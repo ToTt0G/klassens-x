@@ -77,9 +77,6 @@ export default function ClassHubPage({ params }: Props) {
             <Link href={`/klass/${slug}/rosta`} className="btn-primary w-full rotate-1">
               🗳 Börja rösta
             </Link>
-            <Link href={`/klass/${slug}/dashboard`} className="btn-secondary w-full -rotate-1">
-              📊 Se live-dashboard
-            </Link>
           </div>
         </div>
       </div>

@@ -15,15 +15,6 @@ function stripKlassens(text: string): string {
   return text.replace(/^klassens\s*/i, "").trim();
 }
 
-/** Title-case a name: each word capitalised, rest lower. */
-function toTitleCase(name: string): string {
-  return name
-    .toLowerCase()
-    .split(" ")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -46,6 +37,7 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   const [voterId, setVoterId] = useState<string>("");
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVoterId(getOrCreateVoterId(slug));
   }, [slug]);
 
@@ -59,6 +51,24 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   const [queueIndexes, setQueueIndexes] = useState<number[]>([]);
   const [initialized, setInitialized] = useState(false);
+  const [wantsSpoilers, setWantsSpoilersState] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem(`wantsSpoilers-${slug}`);
+      if (stored !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setWantsSpoilersState(stored === "true");
+      }
+    }
+  }, [slug]);
+
+  const setWantsSpoilers = (val: boolean) => {
+    setWantsSpoilersState(val);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(`wantsSpoilers-${slug}`, String(val));
+    }
+  };
 
   useEffect(() => {
     if (!students || !votedIds || initialized) return;
@@ -78,7 +88,9 @@ export default function VotingPage({ params, searchParams }: Props) {
         .filter((i) => !votedSet.has(students[i]._id));
     }
     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQueueIndexes(queue);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInitialized(true);
   }, [students, votedIds, initialized, targetStudentId]);
 
@@ -87,7 +99,6 @@ export default function VotingPage({ params, searchParams }: Props) {
   const [selectedNicknameIds, setSelectedNicknameIds] = useState<Id<"nicknames">[]>([]);
   // Custom nickname the voter is typing in
   const [customNicknameText, setCustomNicknameText] = useState("");
-  const [chartData, setChartData] = useState<{ nicknameId: string; title: string; count: number }[]>([]);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -121,33 +132,58 @@ export default function VotingPage({ params, searchParams }: Props) {
     setDirection(1);
   }, []);
 
-  async function handleVote() {
-    if (!currentStudent || !classId || !voterId) return;
-    if (selectedNicknameIds.length === 0 && !customNicknameText.trim()) return;
+  async function handleAddSuggestion() {
+    if (!currentStudent || !classId || !customNicknameText.trim()) return;
 
     setSubmitting(true);
     try {
-      const nicknameIds: Id<"nicknames">[] = [...selectedNicknameIds];
+      const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
+      const customId = await getOrCreateNickname({
+        classId,
+        studentId: currentStudent._id,
+        title: cleanTitle,
+      });
 
-      if (customNicknameText.trim()) {
-        // Strip any leading "klassens" the user typed so we only store the descriptor
-        const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
-        const customId = await getOrCreateNickname({
-          classId,
-          studentId: currentStudent._id,
-          title: cleanTitle,
-        });
-        nicknameIds.push(customId);
-      }
+      setSelectedNicknameIds(prev => {
+        const set = new Set(prev);
+        set.add(customId);
+        const next = Array.from(set);
+        if (next.length > 2) {
+          return next.slice(next.length - 2);
+        }
+        return next;
+      });
+      setCustomNicknameText("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
+  async function handleVote() {
+    if (!currentStudent || !classId || !voterId) return;
+    if (selectedNicknameIds.length === 0) return;
+
+    setSubmitting(true);
+    try {
       await castVote({
         classId,
         studentId: currentStudent._id,
-        nicknameIds,
+        nicknameIds: selectedNicknameIds,
         voterId,
       });
 
-      setPhase("chart");
+      if (wantsSpoilers) {
+        setPhase("chart");
+      } else {
+        if (targetStudentId) {
+          router.push(`/klass/${slug}/dashboard`);
+        } else {
+          setDirection(1);
+          advanceQueue();
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -181,6 +217,31 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   const votedCount = (students?.length ?? 0) - queueIndexes.length;
 
+  if (wantsSpoilers === null && initialized && queueIndexes.length > 0) {
+    return (
+      <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
+        <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
+          <div className="duct-tape w-32 h-8 -top-4 -left-6 -rotate-12"></div>
+          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">👀</div>
+          <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl font-black uppercase mb-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+            Vill du se resultat?
+          </h1>
+          <p className="font-medium mb-8 text-on-background">
+            Vill du veta vad andra har röstat på mellan varje fråga, eller vill du hålla det hemligt?
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <button className="btn-secondary w-full rotate-1" onClick={() => setWantsSpoilers(false)}>
+              Nej, inga spoilers
+            </button>
+            <button className="btn-primary w-full -rotate-1" onClick={() => setWantsSpoilers(true)}>
+              Ja, visa mig!
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (queueIndexes.length === 0 && initialized) {
     return (
       <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
@@ -191,11 +252,18 @@ export default function VotingPage({ params, searchParams }: Props) {
             Klart!
           </h1>
           <p className="font-medium mb-8 text-on-background">
-            Du har röstat på alla elever i <span className="font-bold border-b-2 border-black">{klass.name}</span>. Kolla in resultatet!
+            Du har röstat på alla elever i <span className="font-bold border-b-2 border-black">{klass.name}</span>.
+            {wantsSpoilers !== false ? " Kolla in resultatet!" : " Tack för dina röster!"}
           </p>
-          <Link href={`/klass/${slug}/dashboard`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
-            📊 Se resultaten →
-          </Link>
+          {wantsSpoilers !== false ? (
+            <Link href={`/klass/${slug}/dashboard`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
+              📊 Se resultaten →
+            </Link>
+          ) : (
+            <Link href={`/klass/${slug}`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
+              ← Tillbaka
+            </Link>
+          )}
         </div>
       </main>
     );
@@ -295,7 +363,14 @@ export default function VotingPage({ params, searchParams }: Props) {
                       placeholder='Skriv "Klassens ___"...'
                       value={customNicknameText}
                       onChange={(e) => setCustomNicknameText(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleVote(); }}
+                      onKeyDown={(e) => { 
+                        if (e.key === "Enter") {
+                           e.preventDefault();
+                           if (customNicknameText.trim()) {
+                             handleAddSuggestion();
+                           }
+                        } 
+                      }}
                     />
                   </div>
 
@@ -307,17 +382,31 @@ export default function VotingPage({ params, searchParams }: Props) {
                     >
                       Hoppa
                     </button>
-                    <button
-                      className="btn-primary flex-1 rotate-1"
-                      disabled={submitting || (selectedNicknameIds.length === 0 && !customNicknameText.trim())}
-                      onClick={handleVote}
-                    >
-                      {submitting ? (
-                        <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
-                      ) : (
-                        "Rösta ✓"
-                      )}
-                    </button>
+                    {customNicknameText.trim() ? (
+                      <button
+                        className="btn-primary flex-1 rotate-1"
+                        disabled={submitting}
+                        onClick={handleAddSuggestion}
+                      >
+                        {submitting ? (
+                          <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
+                        ) : (
+                          "Lägg till förslag"
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-primary flex-1 rotate-1"
+                        disabled={submitting || selectedNicknameIds.length === 0}
+                        onClick={handleVote}
+                      >
+                        {submitting ? (
+                          <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
+                        ) : (
+                          "Rösta ✓"
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>

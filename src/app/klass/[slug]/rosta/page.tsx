@@ -243,6 +243,11 @@ export default function VotingPage({ params, searchParams }: Props) {
   }
 
   if (queueIndexes.length === 0 && initialized) {
+    const handleShare = () => {
+      const url = `${window.location.origin}/klass/${slug}`;
+      navigator.clipboard.writeText(url);
+      alert("Länk kopierad!");
+    };
     return (
       <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
         <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
@@ -255,15 +260,17 @@ export default function VotingPage({ params, searchParams }: Props) {
             Du har röstat på alla elever i <span className="font-bold border-b-2 border-black">{klass.name}</span>.
             {wantsSpoilers !== false ? " Kolla in resultatet!" : " Tack för dina röster!"}
           </p>
-          {wantsSpoilers !== false ? (
+          <div className="flex flex-col gap-4 w-full">
             <Link href={`/klass/${slug}/dashboard`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
               📊 Se resultaten →
             </Link>
-          ) : (
-            <Link href={`/klass/${slug}`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
-              ← Tillbaka
+            <button onClick={handleShare} className="btn-secondary w-full -rotate-1 inline-flex items-center justify-center">
+              🔗 Dela länk
+            </button>
+            <Link href={`/klass/${slug}`} className="btn-ghost w-full rotate-1 inline-flex items-center justify-center">
+              ← Tillbaka till början
             </Link>
-          )}
+          </div>
         </div>
       </main>
     );

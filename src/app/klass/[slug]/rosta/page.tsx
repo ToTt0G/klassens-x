@@ -106,6 +106,7 @@ export default function VotingPage({ params, searchParams }: Props) {
   const [customNicknameText, setCustomNicknameText] = useState("");
   const [direction, setDirection] = useState<1 | -1>(1);
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const currentStudentIndex = queueIndexes[0] ?? -1;
   const currentStudent = currentStudentIndex >= 0 ? students?.[currentStudentIndex] : null;

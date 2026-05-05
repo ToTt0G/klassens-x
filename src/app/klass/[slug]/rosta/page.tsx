@@ -434,13 +434,13 @@ export default function VotingPage({ params, searchParams }: Props) {
                     data={studentVotes}
                     studentName={currentStudent.name}
                     onNext={handleNextAfterChart}
-                    nextButtonText={targetStudentId || queueIndexes.length <= 1 ? "Tillbaka till översikt →" : "Nästa elev →"}
+                    nextButtonText={targetStudentId ? "Tillbaka till översikt →" : (queueIndexes.length <= 1 ? "Slutför →" : "Nästa elev →")}
                   />
                 ) : (
                   <div className="text-center p-8">
                     <div className="spinner border-black mb-4 mx-auto" />
                     <button className="btn-primary w-full" onClick={handleNextAfterChart}>
-                      {targetStudentId || queueIndexes.length <= 1 ? "Tillbaka till översikt →" : "Nästa elev →"}
+                      {targetStudentId ? "Tillbaka till översikt →" : (queueIndexes.length <= 1 ? "Slutför →" : "Nästa elev →")}
                     </button>
                   </div>
                 )}

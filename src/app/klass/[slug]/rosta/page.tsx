@@ -246,7 +246,8 @@ export default function VotingPage({ params, searchParams }: Props) {
     const handleShare = () => {
       const url = `${window.location.origin}/klass/${slug}`;
       navigator.clipboard.writeText(url);
-      alert("Länk kopierad!");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     };
     return (
       <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
@@ -265,7 +266,7 @@ export default function VotingPage({ params, searchParams }: Props) {
               📊 Se resultaten →
             </Link>
             <button onClick={handleShare} className="btn-secondary w-full -rotate-1 inline-flex items-center justify-center">
-              🔗 Dela länk
+              {copied ? "✓ Kopierad!" : "🔗 Dela länk"}
             </button>
             <Link href={`/klass/${slug}`} className="btn-ghost w-full rotate-1 inline-flex items-center justify-center">
               ← Tillbaka till början

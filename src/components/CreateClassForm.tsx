@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getOrCreateVoterId, parseStudentNames } from "@/lib/utils";
@@ -25,6 +25,22 @@ export default function CreateClassForm({
   const [error, setError] = useState("");
   const [slug, setSlug] = useState("");
   const [shareableUrl, setShareableUrl] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (step === "students") {
+      // Small delay to allow AnimatePresence to mount the element before focusing
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus();
+        // Move cursor to end of text if there is any
+        if (textareaRef.current) {
+          const len = textareaRef.current.value.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   useEffect(() => {
     if (slug) {
@@ -148,6 +164,7 @@ export default function CreateClassForm({
               </label>
               <textarea
                 id="student-names"
+                ref={textareaRef}
                 className="input-field"
                 placeholder={"Alice Andersson\nBob Bengtsson\nCarolin Carlsson\n..."}
                 value={studentText}

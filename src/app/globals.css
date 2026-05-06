@@ -225,11 +225,20 @@ body {
   outline: none;
   box-shadow: inset 3px 3px 0px rgba(0, 0, 0, 0.05);
   transition: border-color 0.2s, background 0.2s;
+  /* Fix for disappearing cursor on some devices */
+  caret-color: var(--color-primary);
 }
 
 .input-field:focus {
   background: white;
   border-color: var(--color-primary);
+  /* Prevent iOS zoom by ensuring font-size is at least 16px */
+  font-size: 16px;
+}
+
+/* Ensure cursor is visible even when centered */
+input.input-field.text-center {
+  text-align: center;
 }
 
 .input-field::placeholder {
@@ -242,7 +251,7 @@ textarea.input-field {
   line-height: 1.5;
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 16px; /* Match focus size to prevent jumping */
 }
 
 /* ─── Nickname Chip ─────────────────────────────────────────── */

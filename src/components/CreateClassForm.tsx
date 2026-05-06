@@ -155,7 +155,7 @@ export default function CreateClassForm({
               )}
             </div>
             
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 relative">
               <label
                 htmlFor="student-names"
                 className="font-[family-name:var(--font-label)] text-on-background uppercase tracking-widest font-bold"
@@ -169,7 +169,7 @@ export default function CreateClassForm({
                 placeholder={"Alice Andersson\nBob Bengtsson\nCarolin Carlsson\n..."}
                 value={studentText}
                 onChange={(e) => setStudentText(e.target.value)}
-                autoFocus
+                spellCheck={false}
               />
             </div>
 

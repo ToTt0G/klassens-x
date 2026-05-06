@@ -18,7 +18,7 @@ export default function HomePage() {
         <div className="duct-tape w-16 h-6 -top-2 -left-4 -rotate-45"></div>
       </div>
 
-      <div className="relative shrink-0 w-full max-w-sm sm:max-w-md bg-surface-bright border-6 border-black neubrutalist-shadow rotate-1 flex flex-col items-center gap-5 mt-4 sm:mt-0" style={{ padding: 'clamp(1.25rem, 2.5vw, 2rem)' }}>
+      <div className="relative shrink-0 w-full max-w-sm sm:max-w-md bg-surface-bright border-6 border-black neubrutalist-shadow rotate-1 flex flex-col items-center gap-5 mt-4 sm:mt-0" style={{ padding: 'clamp(1.25rem, 2.5vw, 2rem)', willChange: 'transform' }}>
         {/* Duct tape accents */}
         <div className="duct-tape w-24 h-8 -top-4 -left-6 -rotate-12"></div>
         <div className="duct-tape w-24 h-8 -bottom-4 -right-6 -rotate-12"></div>

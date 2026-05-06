@@ -227,6 +227,11 @@ body {
   transition: border-color 0.2s, background 0.2s;
   /* Fix for disappearing cursor on some devices */
   caret-color: var(--color-primary);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .input-field:focus {
@@ -234,6 +239,7 @@ body {
   border-color: var(--color-primary);
   /* Prevent iOS zoom by ensuring font-size is at least 16px */
   font-size: 16px;
+  caret-color: var(--color-primary);
 }
 
 /* Ensure cursor is visible even when centered */
@@ -246,12 +252,15 @@ input.input-field.text-center {
 }
 
 textarea.input-field {
+  display: block;
   resize: vertical;
   min-height: 180px;
   line-height: 1.5;
   font-family: var(--font-body);
   font-weight: 500;
   font-size: 16px; /* Match focus size to prevent jumping */
+  padding-bottom: 2rem; /* Ensure space for cursor at bottom */
+  overflow-y: auto;
 }
 
 /* ─── Nickname Chip ─────────────────────────────────────────── */

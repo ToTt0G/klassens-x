@@ -165,7 +165,7 @@ export default function CreateClassForm({
               <textarea
                 id="student-names"
                 ref={textareaRef}
-                className="input-field"
+                className="input-field -rotate-1"
                 placeholder={"Alice Andersson\nBob Bengtsson\nCarolin Carlsson\n..."}
                 value={studentText}
                 onChange={(e) => setStudentText(e.target.value)}

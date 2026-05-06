@@ -1,4 +1,6 @@
-﻿# Klassens Tallrikar
+# Klassens Tallrikar
+
+![Klassens Tallrikar Landing Page](public/landing-page.png)
 
 A full-stack web application built for schools and classes to easily organize, manage, and vote on class superlatives/awards (e.g., "Class Clown", "Most Likely to Succeed").
 

@@ -37,6 +37,7 @@ export default defineSchema({
     nicknameId: v.id("nicknames"),
     voterId: v.string(), // sessionStorage UUID of the voter
   })
+    .index("by_class", ["classId"])
     .index("by_student", ["studentId"])
     .index("by_voter_student", ["voterId", "studentId"]),
 });

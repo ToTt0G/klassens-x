@@ -9,6 +9,8 @@
  */
 
 import type * as classes from "../classes.js";
+import type * as cleanup from "../cleanup.js";
+import type * as crons from "../crons.js";
 import type * as nicknames from "../nicknames.js";
 import type * as students from "../students.js";
 import type * as votes from "../votes.js";
@@ -21,6 +23,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   classes: typeof classes;
+  cleanup: typeof cleanup;
+  crons: typeof crons;
   nicknames: typeof nicknames;
   students: typeof students;
   votes: typeof votes;

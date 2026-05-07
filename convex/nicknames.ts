@@ -211,3 +211,62 @@ export const getAllStatsForStudent = query({
     };
   },
 });
+
+/**
+ * OPTIMIZATION (from PR): Get all nicknames and their vote counts for an entire class.
+ * Returns a Record mapping studentId to their stats.
+ */
+export const getAllStatsForClass = query({
+  args: { classId: v.id("classes") },
+  handler: async (ctx, args) => {
+    // 1. Get all nicknames in the class
+    const nicknames = await ctx.db
+      .query("nicknames")
+      .withIndex("by_class", (q) => q.eq("classId", args.classId))
+      .collect();
+
+    if (nicknames.length === 0) return {};
+
+    // 2. Fetch stats for all nicknames
+    const results: Record<
+      string,
+      { totalVotes: number; nicknames: { nickname: any; count: number }[] }
+    > = {};
+
+    // Initialize map
+    const nicknamesByStudent: Record<string, typeof nicknames> = {};
+    for (const n of nicknames) {
+      if (!nicknamesByStudent[n.studentId])
+        nicknamesByStudent[n.studentId] = [];
+      nicknamesByStudent[n.studentId].push(n);
+    }
+
+    for (const [studentId, studentNicknames] of Object.entries(
+      nicknamesByStudent,
+    )) {
+      const stats = [];
+      let totalVotes = 0;
+
+      for (const nickname of studentNicknames) {
+        const count = (
+          await ctx.db
+            .query("votes")
+            .withIndex("by_nickname", (q) => q.eq("nicknameId", nickname._id))
+            .collect()
+        ).length;
+
+        if (count > 0) {
+          stats.push({ nickname, count });
+          totalVotes += count;
+        }
+      }
+
+      results[studentId] = {
+        totalVotes,
+        nicknames: stats.sort((a, b) => b.count - a.count),
+      };
+    }
+
+    return results;
+  },
+});

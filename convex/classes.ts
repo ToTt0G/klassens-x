@@ -63,3 +63,36 @@ export const getBySlug = query({
       .unique();
   },
 });
+
+/**
+ * OPTIMIZATION: Consolidated query to fetch both class and students in one round-trip.
+ * STRIPPING: Returns only the necessary fields for the frontend.
+ */
+export const getWithStudentsBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    const klass = await ctx.db
+      .query("classes")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!klass) return null;
+
+    const students = await ctx.db
+      .query("students")
+      .withIndex("by_class", (q) => q.eq("classId", klass._id))
+      .order("asc")
+      .collect();
+
+    return {
+      _id: klass._id,
+      name: klass.name,
+      slug: klass.slug,
+      students: students.map((s) => ({
+        _id: s._id,
+        name: s.name,
+        order: s.order,
+      })),
+    };
+  },
+});

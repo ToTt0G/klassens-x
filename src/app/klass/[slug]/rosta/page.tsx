@@ -27,13 +27,12 @@ export default function VotingPage({ params, searchParams }: Props) {
   const searchParamsResolved = use(searchParams);
   const targetStudentId = searchParamsResolved.studentId as string;
 
-  const klass = useQuery(api.classes.getBySlug, { slug });
-  const classId = klass?._id;
-
-  const students = useQuery(
-    api.students.getByClass,
-    classId ? { classId } : "skip"
-  );
+  const klassWithStudents = useQuery(api.classes.getWithStudentsBySlug, {
+    slug,
+  });
+  const klass = klassWithStudents;
+  const students = klassWithStudents?.students;
+  const classId = klassWithStudents?._id;
 
   const [voterId, setVoterId] = useState<string>("");
   useEffect(() => {
@@ -43,7 +42,7 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   const votedIds = useQuery(
     api.votes.getVotedStudentIds,
-    classId && voterId ? { classId, voterId } : "skip"
+    classId && voterId ? { classId, voterId } : "skip",
   );
 
   const getOrCreateNickname = useMutation(api.nicknames.getOrCreate);
@@ -86,13 +85,13 @@ export default function VotingPage({ params, searchParams }: Props) {
       queue = students
         .map((_, i) => i)
         .filter((i) => !votedSet.has(students[i]._id));
-        
+
       if (queue.length === 0 && students.length > 0) {
         // Start over if already voted for everyone
         queue = students.map((_, i) => i);
       }
     }
-    
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setQueueIndexes(queue);
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -101,7 +100,9 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   const [phase, setPhase] = useState<Phase>("voting");
   // Nicknames the voter has selected for the current student (up to 2 existing)
-  const [selectedNicknameIds, setSelectedNicknameIds] = useState<Id<"nicknames">[]>([]);
+  const [selectedNicknameIds, setSelectedNicknameIds] = useState<
+    Id<"nicknames">[]
+  >([]);
   // Custom nickname the voter is typing in
   const [customNicknameText, setCustomNicknameText] = useState("");
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -109,26 +110,35 @@ export default function VotingPage({ params, searchParams }: Props) {
   const [copied, setCopied] = useState(false);
 
   const currentStudentIndex = queueIndexes[0] ?? -1;
-  const currentStudent = currentStudentIndex >= 0 ? students?.[currentStudentIndex] : null;
+  const currentStudent =
+    currentStudentIndex >= 0 ? students?.[currentStudentIndex] : null;
 
   // Only load nicknames for the current student — each person has their own pool
   const nicknames = useQuery(
     api.nicknames.getByStudent,
-    currentStudent ? { studentId: currentStudent._id } : "skip"
+    currentStudent ? { studentId: currentStudent._id } : "skip",
   );
 
   const studentVotes = useQuery(
     api.votes.getByStudent,
-    currentStudent ? { studentId: currentStudent._id } : "skip"
+    currentStudent ? { studentId: currentStudent._id } : "skip",
   );
 
   const previousVoteIds = useQuery(
     api.votes.getVoterVotesForStudent,
-    currentStudent && voterId ? { studentId: currentStudent._id, voterId } : "skip"
+    currentStudent && voterId
+      ? { studentId: currentStudent._id, voterId }
+      : "skip",
   );
 
   useEffect(() => {
-    if (previousVoteIds && previousVoteIds.length > 0 && phase === "voting" && selectedNicknameIds.length === 0 && customNicknameText === "") {
+    if (
+      previousVoteIds &&
+      previousVoteIds.length > 0 &&
+      phase === "voting" &&
+      selectedNicknameIds.length === 0 &&
+      customNicknameText === ""
+    ) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedNicknameIds(previousVoteIds);
     }
@@ -162,7 +172,7 @@ export default function VotingPage({ params, searchParams }: Props) {
         title: cleanTitle,
       });
 
-      setSelectedNicknameIds(prev => {
+      setSelectedNicknameIds((prev) => {
         const set = new Set(prev);
         set.add(customId);
         const next = Array.from(set);
@@ -181,14 +191,33 @@ export default function VotingPage({ params, searchParams }: Props) {
 
   async function handleVote() {
     if (!currentStudent || !classId || !voterId) return;
-    if (selectedNicknameIds.length === 0) return;
+
+    const finalNicknameIds = [...selectedNicknameIds];
 
     setSubmitting(true);
     try {
+      // BATCHING: If there's a custom nickname, create it first
+      if (customNicknameText.trim()) {
+        const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
+        const customId = await getOrCreateNickname({
+          classId,
+          studentId: currentStudent._id,
+          title: cleanTitle,
+        });
+        if (!finalNicknameIds.includes(customId)) {
+          finalNicknameIds.push(customId);
+        }
+      }
+
+      if (finalNicknameIds.length === 0) {
+        setSubmitting(false);
+        return;
+      }
+
       await castVote({
         classId,
         studentId: currentStudent._id,
-        nicknameIds: selectedNicknameIds,
+        nicknameIds: finalNicknameIds.slice(0, 2), // Ensure max 2
         voterId,
       });
 
@@ -240,18 +269,27 @@ export default function VotingPage({ params, searchParams }: Props) {
       <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
         <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
           <div className="duct-tape w-32 h-8 -top-4 -left-6 -rotate-12"></div>
-          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">👀</div>
+          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            👀
+          </div>
           <h1 className="font-[family-name:var(--font-headline)] text-primary text-3xl font-black uppercase mb-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
             Vill du se resultat?
           </h1>
           <p className="font-medium mb-8 text-on-background">
-            Vill du veta vad andra har röstat på mellan varje fråga, eller vill du hålla det hemligt?
+            Vill du veta vad andra har röstat på mellan varje fråga, eller vill
+            du hålla det hemligt?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full">
-            <button className="btn-secondary w-full rotate-1" onClick={() => setWantsSpoilers(false)}>
+            <button
+              className="btn-secondary w-full rotate-1"
+              onClick={() => setWantsSpoilers(false)}
+            >
               Nej, inga spoilers
             </button>
-            <button className="btn-primary w-full -rotate-1" onClick={() => setWantsSpoilers(true)}>
+            <button
+              className="btn-primary w-full -rotate-1"
+              onClick={() => setWantsSpoilers(true)}
+            >
               Ja, visa mig!
             </button>
           </div>
@@ -271,22 +309,39 @@ export default function VotingPage({ params, searchParams }: Props) {
       <main className="flex-grow flex flex-col items-center justify-center p-8 relative">
         <div className="bg-surface border-8 border-black p-10 text-center max-w-md w-full neubrutalist-shadow -rotate-2 relative">
           <div className="duct-tape w-32 h-8 -top-4 -left-6 -rotate-12"></div>
-          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">🎊</div>
+          <div className="text-6xl mb-4 rotate-12 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            🎊
+          </div>
           <h1 className="font-[family-name:var(--font-headline)] text-primary text-4xl font-black uppercase mb-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
             Klart!
           </h1>
           <p className="font-medium mb-8 text-on-background">
-            Du har röstat på alla elever i <span className="font-bold border-b-2 border-black">{klass.name}</span>.
-            {wantsSpoilers !== false ? " Kolla in resultatet!" : " Tack för dina röster!"}
+            Du har röstat på alla elever i{" "}
+            <span className="font-bold border-b-2 border-black">
+              {klass.name}
+            </span>
+            .
+            {wantsSpoilers !== false
+              ? " Kolla in resultatet!"
+              : " Tack för dina röster!"}
           </p>
           <div className="flex flex-col gap-4 w-full">
-            <Link href={`/klass/${slug}/dashboard`} className="btn-primary w-full rotate-2 inline-flex items-center justify-center">
+            <Link
+              href={`/klass/${slug}/dashboard`}
+              className="btn-primary w-full rotate-2 inline-flex items-center justify-center"
+            >
               📊 Se resultaten →
             </Link>
-            <button onClick={handleShare} className="btn-secondary w-full -rotate-1 inline-flex items-center justify-center">
+            <button
+              onClick={handleShare}
+              className="btn-secondary w-full -rotate-1 inline-flex items-center justify-center"
+            >
               {copied ? "✓ Kopierad!" : "🔗 Dela länk"}
             </button>
-            <Link href={`/klass/${slug}`} className="btn-ghost w-full rotate-1 inline-flex items-center justify-center">
+            <Link
+              href={`/klass/${slug}`}
+              className="btn-ghost w-full rotate-1 inline-flex items-center justify-center"
+            >
               ← Tillbaka till början
             </Link>
           </div>
@@ -321,7 +376,10 @@ export default function VotingPage({ params, searchParams }: Props) {
       <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center gap-6">
         {/* Header / Progress bar */}
         <div className="w-full flex items-center gap-4 border-4 border-black p-3 bg-surface rotate-1 neubrutalist-shadow-sm">
-          <Link href={`/klass/${slug}`} className="btn-secondary !px-2 !py-1 rotate-[-2deg]">
+          <Link
+            href={`/klass/${slug}`}
+            className="btn-secondary !px-2 !py-1 rotate-[-2deg]"
+          >
             ←
           </Link>
           <div className="flex-1">
@@ -335,9 +393,21 @@ export default function VotingPage({ params, searchParams }: Props) {
             {phase === "voting" && currentStudent && (
               <motion.div
                 key={`vote-${currentStudent._id}`}
-                initial={{ opacity: 0, x: direction * 60, rotate: direction * 5 }}
-                animate={{ opacity: 1, x: 0, rotate: (currentStudent._id.charCodeAt(0) % 5) - 2 }}
-                exit={{ opacity: 0, x: direction * -60, rotate: direction * -5 }}
+                initial={{
+                  opacity: 0,
+                  x: direction * 60,
+                  rotate: direction * 5,
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  rotate: (currentStudent._id.charCodeAt(0) % 5) - 2,
+                }}
+                exit={{
+                  opacity: 0,
+                  x: direction * -60,
+                  rotate: direction * -5,
+                }}
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
                 className="w-full relative bg-white p-4 pb-8 neubrutalist-shadow border-4 border-black"
               >
@@ -346,11 +416,16 @@ export default function VotingPage({ params, searchParams }: Props) {
                 <div className="duct-tape w-24 h-8 -top-4 -right-6 rotate-12"></div>
 
                 {/* Avatar */}
-                <div className={`h-40 sm:h-52 border-4 border-black mb-4 flex items-center justify-center overflow-hidden relative ${getAvatarColor(currentStudent._id)}`}>
-                   <div className="text-7xl sm:text-8xl font-black font-[family-name:var(--font-headline)] opacity-90 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
-                     {currentStudent.name.charAt(0).toUpperCase()}
-                   </div>
-                   <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,black_1px,transparent_1px)]" style={{ backgroundSize: '10px 10px' }}></div>
+                <div
+                  className={`h-40 sm:h-52 border-4 border-black mb-4 flex items-center justify-center overflow-hidden relative ${getAvatarColor(currentStudent._id)}`}
+                >
+                  <div className="text-7xl sm:text-8xl font-black font-[family-name:var(--font-headline)] opacity-90 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">
+                    {currentStudent.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div
+                    className="absolute inset-0 opacity-10 bg-[radial-gradient(circle,black_1px,transparent_1px)]"
+                    style={{ backgroundSize: "10px 10px" }}
+                  ></div>
                 </div>
 
                 <div className="text-center mb-6 border-b-4 border-black pb-4 border-dashed">
@@ -370,18 +445,26 @@ export default function VotingPage({ params, searchParams }: Props) {
                       {nicknames.map((nickname, i) => (
                         <button
                           key={nickname._id}
-                          className={`nickname-chip ${(i % 2 === 0) ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedNicknameIds.includes(nickname._id) ? "selected" : ""}`}
+                          className={`nickname-chip ${i % 2 === 0 ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedNicknameIds.includes(nickname._id) ? "selected" : ""}`}
                           onClick={() => toggleNickname(nickname._id)}
-                          disabled={!selectedNicknameIds.includes(nickname._id) && selectedNicknameIds.length >= 2}
+                          disabled={
+                            !selectedNicknameIds.includes(nickname._id) &&
+                            selectedNicknameIds.length >= 2
+                          }
                         >
-                          {selectedNicknameIds.includes(nickname._id) ? "✓ " : ""}klassens {nickname.title.toLowerCase()}
+                          {selectedNicknameIds.includes(nickname._id)
+                            ? "✓ "
+                            : ""}
+                          klassens {nickname.title.toLowerCase()}
                         </button>
                       ))}
                     </div>
                   )}
 
                   <div className="mt-2">
-                    <label htmlFor="custom-nickname" className="sr-only">Klassens ___ (valfritt)</label>
+                    <label htmlFor="custom-nickname" className="sr-only">
+                      Klassens ___ (valfritt)
+                    </label>
                     <input
                       id="custom-nickname"
                       type="text"
@@ -389,13 +472,16 @@ export default function VotingPage({ params, searchParams }: Props) {
                       placeholder='Skriv "Klassens ___"...'
                       value={customNicknameText}
                       onChange={(e) => setCustomNicknameText(e.target.value)}
-                      onKeyDown={(e) => { 
+                      onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                           e.preventDefault();
-                           if (customNicknameText.trim()) {
-                             handleAddSuggestion();
-                           }
-                        } 
+                          e.preventDefault();
+                          if (
+                            customNicknameText.trim() ||
+                            selectedNicknameIds.length > 0
+                          ) {
+                            handleVote();
+                          }
+                        }
                       }}
                     />
                   </div>
@@ -408,31 +494,27 @@ export default function VotingPage({ params, searchParams }: Props) {
                     >
                       Hoppa
                     </button>
-                    {customNicknameText.trim() ? (
-                      <button
-                        className="btn-primary flex-1 rotate-1"
-                        disabled={submitting}
-                        onClick={handleAddSuggestion}
-                      >
-                        {submitting ? (
-                          <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
-                        ) : (
-                          "Lägg till förslag"
-                        )}
-                      </button>
-                    ) : (
-                      <button
-                        className="btn-primary flex-1 rotate-1"
-                        disabled={submitting || selectedNicknameIds.length === 0}
-                        onClick={handleVote}
-                      >
-                        {submitting ? (
-                          <><span className="spinner border-black" style={{ width: "1.2rem", height: "1.2rem" }} /> Sparar…</>
-                        ) : (
-                          "Rösta ✓"
-                        )}
-                      </button>
-                    )}
+                    <button
+                      className="btn-primary flex-1 rotate-1"
+                      disabled={
+                        submitting ||
+                        (selectedNicknameIds.length === 0 &&
+                          !customNicknameText.trim())
+                      }
+                      onClick={handleVote}
+                    >
+                      {submitting ? (
+                        <>
+                          <span
+                            className="spinner border-black"
+                            style={{ width: "1.2rem", height: "1.2rem" }}
+                          />{" "}
+                          Sparar…
+                        </>
+                      ) : (
+                        "Rösta ✓"
+                      )}
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -453,13 +535,26 @@ export default function VotingPage({ params, searchParams }: Props) {
                     data={studentVotes}
                     studentName={currentStudent.name}
                     onNext={handleNextAfterChart}
-                    nextButtonText={targetStudentId ? "Tillbaka till översikt →" : (queueIndexes.length <= 1 ? "Slutför →" : "Nästa elev →")}
+                    nextButtonText={
+                      targetStudentId
+                        ? "Tillbaka till översikt →"
+                        : queueIndexes.length <= 1
+                          ? "Slutför →"
+                          : "Nästa elev →"
+                    }
                   />
                 ) : (
                   <div className="text-center p-8">
                     <div className="spinner border-black mb-4 mx-auto" />
-                    <button className="btn-primary w-full" onClick={handleNextAfterChart}>
-                      {targetStudentId ? "Tillbaka till översikt →" : (queueIndexes.length <= 1 ? "Slutför →" : "Nästa elev →")}
+                    <button
+                      className="btn-primary w-full"
+                      onClick={handleNextAfterChart}
+                    >
+                      {targetStudentId
+                        ? "Tillbaka till översikt →"
+                        : queueIndexes.length <= 1
+                          ? "Slutför →"
+                          : "Nästa elev →"}
                     </button>
                   </div>
                 )}

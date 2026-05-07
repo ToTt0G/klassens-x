@@ -32,12 +32,13 @@ export default defineSchema({
 
   // Individual votes: one voter → one student → one nickname
   votes: defineTable({
-    classId: v.id("classes"),
-    studentId: v.id("students"),
+    classId: v.optional(v.id("classes")), // Optional for safe migration
+    studentId: v.optional(v.id("students")), // Optional for safe migration
     nicknameId: v.id("nicknames"),
     voterId: v.string(), // sessionStorage UUID of the voter
   })
     .index("by_class", ["classId"])
     .index("by_student", ["studentId"])
-    .index("by_voter_student", ["voterId", "studentId"]),
+    .index("by_voter_student", ["voterId", "studentId"])
+    .index("by_nickname", ["nicknameId"]),
 });

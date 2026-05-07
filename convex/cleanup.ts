@@ -1,16 +1,16 @@
-import { internalMutation, internalAction } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
-const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000;
+const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
 /**
- * Iterates through all classes and schedules deletion for those older than 3 months.
+ * Iterates through all classes and schedules deletion for those older than 60 days.
  */
 export const runCleanup = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const cutoff = Date.now() - THREE_MONTHS_MS;
+    const cutoff = Date.now() - SIXTY_DAYS_MS;
 
     let count = 0;
     // Querying with order("asc") uses the built-in creation time index.
@@ -38,25 +38,25 @@ export const deleteClass = internalMutation({
   handler: async (ctx, args) => {
     const { classId } = args;
 
-    // 1. Delete votes
-    const votes = await ctx.db
-      .query("votes")
-      .withIndex("by_class", (q) => q.eq("classId", classId))
-      .collect();
-    for (const vote of votes) {
-      await ctx.db.delete(vote._id);
-    }
-
-    // 2. Delete nicknames
+    // 1. Delete votes (must find them via nicknames since they are no longer linked to classId directly)
     const nicknames = await ctx.db
       .query("nicknames")
       .withIndex("by_class", (q) => q.eq("classId", classId))
       .collect();
+
     for (const nickname of nicknames) {
+      const votes = await ctx.db
+        .query("votes")
+        .withIndex("by_nickname", (q) => q.eq("nicknameId", nickname._id))
+        .collect();
+      for (const vote of votes) {
+        await ctx.db.delete(vote._id);
+      }
+      // Delete the nickname itself
       await ctx.db.delete(nickname._id);
     }
 
-    // 3. Delete students
+    // 2. Delete students
     const students = await ctx.db
       .query("students")
       .withIndex("by_class", (q) => q.eq("classId", classId))
@@ -65,7 +65,7 @@ export const deleteClass = internalMutation({
       await ctx.db.delete(student._id);
     }
 
-    // 4. Delete the class itself
+    // 3. Delete the class itself
     await ctx.db.delete(classId);
 
     console.log(`Deleted class ${classId} and all associated data.`);

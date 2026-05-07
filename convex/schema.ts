@@ -40,5 +40,6 @@ export default defineSchema({
     .index("by_class", ["classId"])
     .index("by_student", ["studentId"])
     .index("by_voter_student", ["voterId", "studentId"])
+    .index("by_voter", ["voterId"])
     .index("by_nickname", ["nicknameId"]),
 });

@@ -1,58 +1,83 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 /**
- * Cast votes for a student. A voter can vote for up to 2 existing nicknames
- * and submit 1 custom nickname per student. nicknameIds are already resolved.
- * Prevents duplicate votes from the same voter for the same student.
+ * Cast votes for a student, optionally creating new nicknames in the same transaction.
  *
- * OPTIMIZATION: No longer stores classId and studentId in the vote document.
+ * OPTIMIZATION: Batches nickname creation and voting into a single call.
+ * SECURITY: Enforces max 2 votes per student per voter.
  */
 export const cast = mutation({
   args: {
     classId: v.id("classes"),
     studentId: v.id("students"),
-    nicknameIds: v.array(v.id("nicknames")), // 1–3 nickname IDs
+    nicknameIds: v.array(v.id("nicknames")), // Existing nickname IDs
+    customTitles: v.optional(v.array(v.string())), // New titles to create/merge
     voterId: v.string(),
   },
   handler: async (ctx, args) => {
-    // Delete any existing votes from this voter for this student
-    // We still use the by_voter_student index for now for backward compatibility
-    // with documents that still have studentId.
-    const existing = await ctx.db
-      .query("votes")
-      .withIndex("by_voter_student", (q) =>
-        q.eq("voterId", args.voterId).eq("studentId", args.studentId),
-      )
-      .collect();
+    // 1. Resolve custom titles into IDs (applying fuzzy merge)
+    const resolvedNicknameIds = [...args.nicknameIds];
 
-    for (const vote of existing) {
-      await ctx.db.delete(vote._id);
+    if (args.customTitles) {
+      for (const title of args.customTitles) {
+        // We use an internal function or just re-implement the logic to avoid multiple mutations
+        // For simplicity, we'll call the existing logic within this mutation context
+        const nicknameId = await ctx.runMutation(
+          internal.nicknames.getOrCreateInternal,
+          {
+            classId: args.classId,
+            studentId: args.studentId,
+            title,
+          },
+        );
+        if (!resolvedNicknameIds.includes(nicknameId)) {
+          resolvedNicknameIds.push(nicknameId);
+        }
+      }
     }
 
-    // Insert one vote record per nickname
-    // OPTIMIZATION: Only store nicknameId and voterId
-    for (const nicknameId of args.nicknameIds) {
+    // 2. Limit to top 2 (safety)
+    const finalNicknameIds = resolvedNicknameIds.slice(0, 2);
+
+    if (finalNicknameIds.length === 0) {
+      throw new Error("No nicknames selected");
+    }
+
+    // 3. Delete any existing votes from this voter for this student
+    const existing = await ctx.db
+      .query("votes")
+      .withIndex("by_voter", (q) => q.eq("voterId", args.voterId))
+      .collect();
+
+    // Manual filter because we removed studentId from index/schema
+    // (Note: In a high-traffic app, we'd want a better index, but for this scale it's fine)
+    for (const vote of existing) {
+      const nickname = await ctx.db.get(vote.nicknameId);
+      if (nickname?.studentId === args.studentId) {
+        await ctx.db.delete(vote._id);
+      }
+    }
+
+    // 4. Insert new vote records
+    for (const nicknameId of finalNicknameIds) {
       await ctx.db.insert("votes", {
         nicknameId,
         voterId: args.voterId,
       });
     }
 
-    return { alreadyVoted: false };
+    return { success: true };
   },
 });
 
 /**
  * Get all votes for a student, aggregated on the server.
- *
- * OPTIMIZATION: Returns a tiny aggregated array instead of raw documents.
- * STRIPPING: Only returns { title, count }.
  */
 export const getByStudent = query({
   args: { studentId: v.id("students") },
   handler: async (ctx, args) => {
-    // 1. Get all nicknames for this student
     const nicknames = await ctx.db
       .query("nicknames")
       .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
@@ -60,7 +85,6 @@ export const getByStudent = query({
 
     if (nicknames.length === 0) return [];
 
-    // 2. For each nickname, count the votes
     const results = await Promise.all(
       nicknames.map(async (n) => {
         const count = (
@@ -78,20 +102,16 @@ export const getByStudent = query({
       }),
     );
 
-    // 3. Filter out zero counts and sort
     return results.filter((r) => r.count > 0).sort((a, b) => b.count - a.count);
   },
 });
 
 /**
  * Get all student IDs this voter has already voted for.
- *
- * OPTIMIZATION: Returns only a unique array of student IDs (strings).
  */
 export const getVotedStudentIds = query({
   args: { classId: v.id("classes"), voterId: v.string() },
   handler: async (ctx, args) => {
-    // We fetch nicknames for the class to find where the voter has voted
     const students = await ctx.db
       .query("students")
       .withIndex("by_class", (q) => q.eq("classId", args.classId))
@@ -100,7 +120,6 @@ export const getVotedStudentIds = query({
     const votedStudentIds: string[] = [];
 
     for (const student of students) {
-      // Find if voter has any votes for any of this student's nicknames
       const nicknames = await ctx.db
         .query("nicknames")
         .withIndex("by_student", (q) => q.eq("studentId", student._id))

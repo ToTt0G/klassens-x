@@ -103,6 +103,8 @@ export default function VotingPage({ params, searchParams }: Props) {
   const [selectedNicknameIds, setSelectedNicknameIds] = useState<
     Id<"nicknames">[]
   >([]);
+  // Custom nicknames the voter has added locally but not yet sent
+  const [pendingCustomTitles, setPendingCustomTitles] = useState<string[]>([]);
   // Custom nickname the voter is typing in
   const [customNicknameText, setCustomNicknameText] = useState("");
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -147,77 +149,47 @@ export default function VotingPage({ params, searchParams }: Props) {
   function toggleNickname(id: Id<"nicknames">) {
     setSelectedNicknameIds((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 2) return prev;
+      if (prev.length + pendingCustomTitles.length >= 2) return prev;
       return [...prev, id];
     });
+  }
+
+  function togglePendingTitle(title: string) {
+    setPendingCustomTitles((prev) => prev.filter((t) => t !== title));
   }
 
   const advanceQueue = useCallback(() => {
     setQueueIndexes((prev) => prev.slice(1));
     setPhase("voting");
     setSelectedNicknameIds([]);
+    setPendingCustomTitles([]);
     setCustomNicknameText("");
     setDirection(1);
   }, []);
 
-  async function handleAddSuggestion() {
+  function handleAddLocalSuggestion() {
     if (!currentStudent || !classId || !customNicknameText.trim()) return;
+    const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
 
-    setSubmitting(true);
-    try {
-      const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
-      const customId = await getOrCreateNickname({
-        classId,
-        studentId: currentStudent._id,
-        title: cleanTitle,
-      });
-
-      setSelectedNicknameIds((prev) => {
-        const set = new Set(prev);
-        set.add(customId);
-        const next = Array.from(set);
-        if (next.length > 2) {
-          return next.slice(next.length - 2);
-        }
-        return next;
-      });
-      setCustomNicknameText("");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSubmitting(false);
-    }
+    setPendingCustomTitles((prev) => {
+      if (prev.includes(cleanTitle)) return prev;
+      if (prev.length + selectedNicknameIds.length >= 2) return prev;
+      return [...prev, cleanTitle];
+    });
+    setCustomNicknameText("");
   }
 
   async function handleVote() {
     if (!currentStudent || !classId || !voterId) return;
 
-    const finalNicknameIds = [...selectedNicknameIds];
-
     setSubmitting(true);
     try {
-      // BATCHING: If there's a custom nickname, create it first
-      if (customNicknameText.trim()) {
-        const cleanTitle = stripKlassens(customNicknameText).toLowerCase();
-        const customId = await getOrCreateNickname({
-          classId,
-          studentId: currentStudent._id,
-          title: cleanTitle,
-        });
-        if (!finalNicknameIds.includes(customId)) {
-          finalNicknameIds.push(customId);
-        }
-      }
-
-      if (finalNicknameIds.length === 0) {
-        setSubmitting(false);
-        return;
-      }
-
+      // BATCHING: Send both existing IDs and local custom titles in one mutation
       await castVote({
         classId,
         studentId: currentStudent._id,
-        nicknameIds: finalNicknameIds.slice(0, 2), // Ensure max 2
+        nicknameIds: selectedNicknameIds,
+        customTitles: pendingCustomTitles,
         voterId,
       });
 
@@ -440,22 +412,35 @@ export default function VotingPage({ params, searchParams }: Props) {
                   </p>
 
                   {/* Existing nickname chips for this student */}
-                  {nicknames && nicknames.length > 0 && (
+                  {((nicknames && nicknames.length > 0) ||
+                    pendingCustomTitles.length > 0) && (
                     <div className="flex flex-wrap justify-center gap-3">
-                      {nicknames.map((nickname, i) => (
+                      {nicknames?.map((nickname, i) => (
                         <button
                           key={nickname._id}
                           className={`nickname-chip ${i % 2 === 0 ? "rotate-[-1deg]" : "rotate-[2deg]"} ${selectedNicknameIds.includes(nickname._id) ? "selected" : ""}`}
                           onClick={() => toggleNickname(nickname._id)}
                           disabled={
                             !selectedNicknameIds.includes(nickname._id) &&
-                            selectedNicknameIds.length >= 2
+                            selectedNicknameIds.length +
+                              pendingCustomTitles.length >=
+                              2
                           }
                         >
                           {selectedNicknameIds.includes(nickname._id)
                             ? "✓ "
                             : ""}
                           klassens {nickname.title.toLowerCase()}
+                        </button>
+                      ))}
+                      {/* GHOST CHIPS: Local pending suggestions */}
+                      {pendingCustomTitles.map((title, i) => (
+                        <button
+                          key={`pending-${title}`}
+                          className={`nickname-chip selected ${(i + (nicknames?.length ?? 0)) % 2 === 0 ? "rotate-[-1deg]" : "rotate-[2deg]"}`}
+                          onClick={() => togglePendingTitle(title)}
+                        >
+                          ✓ klassens {title.toLowerCase()}
                         </button>
                       ))}
                     </div>
@@ -475,11 +460,8 @@ export default function VotingPage({ params, searchParams }: Props) {
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          if (
-                            customNicknameText.trim() ||
-                            selectedNicknameIds.length > 0
-                          ) {
-                            handleVote();
+                          if (customNicknameText.trim()) {
+                            handleAddLocalSuggestion();
                           }
                         }
                       }}
@@ -494,27 +476,41 @@ export default function VotingPage({ params, searchParams }: Props) {
                     >
                       Hoppa
                     </button>
-                    <button
-                      className="btn-primary flex-1 rotate-1"
-                      disabled={
-                        submitting ||
-                        (selectedNicknameIds.length === 0 &&
-                          !customNicknameText.trim())
-                      }
-                      onClick={handleVote}
-                    >
-                      {submitting ? (
-                        <>
-                          <span
-                            className="spinner border-black"
-                            style={{ width: "1.2rem", height: "1.2rem" }}
-                          />{" "}
-                          Sparar…
-                        </>
-                      ) : (
-                        "Rösta ✓"
-                      )}
-                    </button>
+                    {customNicknameText.trim() ? (
+                      <button
+                        className="btn-primary flex-1 rotate-1"
+                        onClick={handleAddLocalSuggestion}
+                        disabled={
+                          selectedNicknameIds.length +
+                            pendingCustomTitles.length >=
+                          2
+                        }
+                      >
+                        Lägg till förslag
+                      </button>
+                    ) : (
+                      <button
+                        className="btn-primary flex-1 rotate-1"
+                        disabled={
+                          submitting ||
+                          (selectedNicknameIds.length === 0 &&
+                            pendingCustomTitles.length === 0)
+                        }
+                        onClick={handleVote}
+                      >
+                        {submitting ? (
+                          <>
+                            <span
+                              className="spinner border-black"
+                              style={{ width: "1.2rem", height: "1.2rem" }}
+                            />{" "}
+                            Sparar…
+                          </>
+                        ) : (
+                          "Rösta ✓"
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>

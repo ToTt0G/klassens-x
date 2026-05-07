@@ -167,3 +167,81 @@ export const getAllStatsForStudent = query({
     return { totalVotes: votes.length, nicknames: stats };
   },
 });
+
+/**
+ * Get all nicknames and their vote counts for an entire class.
+ * Returns a Record mapping studentId to their stats.
+ */
+export const getAllStatsForClass = query({
+  args: { classId: v.id("classes") },
+  handler: async (ctx, args) => {
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_class", (q) => q.eq("classId", args.classId))
+      .collect();
+
+    // Group votes by student
+    const votesByStudent: Record<string, typeof votes> = {};
+    for (const vote of votes) {
+      if (!votesByStudent[vote.studentId]) {
+        votesByStudent[vote.studentId] = [];
+      }
+      votesByStudent[vote.studentId].push(vote);
+    }
+
+    // Collect all unique nickname IDs
+    const uniqueNicknameIds = new Set<string>();
+    for (const vote of votes) {
+      uniqueNicknameIds.add(vote.nicknameId);
+    }
+
+    // Fetch all nicknames in parallel
+    const nicknames = await Promise.all(
+      Array.from(uniqueNicknameIds).map((id) => ctx.db.get(id as Id<"nicknames">))
+    );
+
+    // Create a map for quick nickname lookup
+    const nicknameMap: Record<string, NonNullable<typeof nicknames[0]>> = {};
+    for (const nickname of nicknames) {
+      if (nickname) {
+        nicknameMap[nickname._id] = nickname;
+      }
+    }
+
+    // Build stats per student
+    const statsPerStudent: Record<string, { totalVotes: number, nicknames: { nickname: NonNullable<typeof nicknames[0]>, count: number }[] }> = {};
+
+    // Initialize with empty stats for all students in the class
+    const students = await ctx.db
+      .query("students")
+      .withIndex("by_class", (q) => q.eq("classId", args.classId))
+      .collect();
+
+    for (const student of students) {
+      statsPerStudent[student._id] = { totalVotes: 0, nicknames: [] };
+    }
+
+    // Populate stats
+    for (const [studentId, studentVotes] of Object.entries(votesByStudent)) {
+      const tally: Record<string, number> = {};
+      for (const vote of studentVotes) {
+        tally[vote.nicknameId] = (tally[vote.nicknameId] || 0) + 1;
+      }
+
+      const stats = Object.entries(tally)
+        .map(([nicknameId, count]) => ({
+          nickname: nicknameMap[nicknameId],
+          count,
+        }))
+        .filter((stat) => stat.nickname !== undefined)
+        .sort((a, b) => b.count - a.count);
+
+      statsPerStudent[studentId] = {
+        totalVotes: studentVotes.length,
+        nicknames: stats,
+      };
+    }
+
+    return statsPerStudent;
+  },
+});

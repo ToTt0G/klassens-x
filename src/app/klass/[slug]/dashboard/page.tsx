@@ -14,11 +14,12 @@ interface Props {
 function StudentCard({
   student,
   slug,
+  statsResult,
 }: {
   student: { _id: Id<"students">; name: string };
   slug: string;
+  statsResult?: { totalVotes: number, nicknames: { nickname: { _id: Id<"nicknames">, title: string }, count: number }[] };
 }) {
-  const statsResult = useQuery(api.nicknames.getAllStatsForStudent, { studentId: student._id });
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getCardColor = (id: string) => {
@@ -148,6 +149,10 @@ export default function DashboardPage({ params }: Props) {
   const classId = klass?._id;
   const students = useQuery(
     api.students.getByClass,
+    classId ? { classId } : "skip"
+  );
+  const classStats = useQuery(
+    api.nicknames.getAllStatsForClass,
     classId ? { classId } : "skip"
   );
 
@@ -334,7 +339,12 @@ export default function DashboardPage({ params }: Props) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 pb-12 items-start">
             {filtered.map((student) => (
-              <StudentCard key={student._id} student={student} slug={slug} />
+              <StudentCard
+                key={student._id}
+                student={student}
+                slug={slug}
+                statsResult={classStats ? classStats[student._id] : undefined}
+              />
             ))}
           </div>
         )}

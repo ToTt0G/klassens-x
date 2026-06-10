@@ -106,21 +106,19 @@ Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder
    - Set **Docker Build Stage (Target)** to `runner`.
 4. In the Web service **General Settings**:
    - Set **Target Port** to `3000`.
-5. Configure the **Environment Variables** in the Web service settings (both production and preview variables must be defined here, as Dokploy does not support separate environment variable sets for previews):
-   - **Production variables**:
-     - `CONVEX_URL` = `https://klassens-convex.ezryder.us`
-     - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex.ezryder.us`
-     - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-production-admin-key>`
-   - **Preview variables** (these will override production values in preview containers):
-     - `CONVEX_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
-     - `CONVEX_SELF_HOSTED_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
-     - `CONVEX_SELF_HOSTED_ADMIN_KEY_PREVIEW` = `<your-preview-admin-key>`
-6. Set up the **Domain** in the Web service settings:
+5. Configure the production **Environment Variables** in the Web service settings:
+   - `CONVEX_URL` = `https://klassens-convex.ezryder.us`
+   - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex.ezryder.us`
+   - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-production-admin-key>`
+6. Under the **Preview** tab settings in the Web service dashboard, enable Preview Deployments and configure the preview-specific environment variables:
+   - `CONVEX_URL` = `https://klassens-convex-preview.ezryder.us`
+   - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex-preview.ezryder.us`
+   - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-preview-admin-key>`
+7. Set up the **Domain** in the Web service settings:
    - Add your domain `klassens.ezryder.us` pointing to target port `3000`.
-7. Enable **Preview Deployments** on the Web service settings.
 8. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server, and pull requests trigger preview deployments.
 
-Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container's entrypoint script (`scripts/entrypoint.sh`) checks for the presence of the `DOKPLOY_DEPLOY_URL` variable (injected by Dokploy for preview deployments). If it exists, it swaps the active database and backend endpoints to the preview versions before deploying Convex functions and launching the Next.js app!
+Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container's entrypoint script (`scripts/entrypoint.sh`) runs `npx convex deploy` to deploy Convex functions to your backend and then launches the Next.js app. Dokploy injects the appropriate environment variables automatically depending on whether it's a production or a preview deployment!
 
 ---
 

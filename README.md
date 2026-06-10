@@ -60,7 +60,7 @@ This application is self-hosted on a home Ubuntu server (`ryder@basement-server`
 
 The deployment consists of two services in a single Dokploy project called **"Klassens"**:
 1. **Infrastructure Service**: A persistent docker-compose setup containing PostgreSQL, Convex Production (connected to PostgreSQL), and Convex Preview (running standalone with SQLite).
-2. **Web Service**: The Next.js frontend, built on-server from the repository for both production and preview deployments.
+2. **Web Service**: The Next.js frontend, deployed as a Dokploy Application Service that builds on-server using the Dockerfile.
 
 ---
 
@@ -98,9 +98,15 @@ Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder
    - `klassens-convex-preview.ezryder.us` → `http://192.168.4.69:80`
 
 #### Step 4: Configure the Web Service
-1. Within the "Klassens" project in Dokploy, add a new **Compose** service named **Web**.
+1. Within the "Klassens" project in Dokploy, add a new **Application** service named **Web**.
 2. Link this service to your GitHub repository and point to the `main` branch.
-3. Configure the **Environment Variables** in the Web service settings (both production and preview variables must be defined here, as Dokploy does not support separate environment variable sets for previews):
+3. In the Web service **Build Settings**:
+   - Set **Build Type** to `Dockerfile`.
+   - Set **Dockerfile Path** to `Dockerfile`.
+   - Set **Docker Build Stage (Target)** to `runner`.
+4. In the Web service **General Settings**:
+   - Set **Target Port** to `3000`.
+5. Configure the **Environment Variables** in the Web service settings (both production and preview variables must be defined here, as Dokploy does not support separate environment variable sets for previews):
    - **Production variables**:
      - `CONVEX_URL` = `https://klassens-convex.ezryder.us`
      - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex.ezryder.us`
@@ -109,10 +115,10 @@ Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder
      - `CONVEX_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
      - `CONVEX_SELF_HOSTED_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
      - `CONVEX_SELF_HOSTED_ADMIN_KEY_PREVIEW` = `<your-preview-admin-key>`
-4. Set up the **Domain** in the Web service settings:
-   - Port `3000` → `klassens.ezryder.us`
-5. Enable **Preview Deployments** on the Web service settings.
-6. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server, and pull requests trigger preview deployments.
+6. Set up the **Domain** in the Web service settings:
+   - Add your domain `klassens.ezryder.us` pointing to target port `3000`.
+7. Enable **Preview Deployments** on the Web service settings.
+8. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server, and pull requests trigger preview deployments.
 
 Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container's entrypoint script (`scripts/entrypoint.sh`) checks for the presence of the `DOKPLOY_DEPLOY_URL` variable (injected by Dokploy for preview deployments). If it exists, it swaps the active database and backend endpoints to the preview versions before deploying Convex functions and launching the Next.js app!
 
@@ -177,19 +183,4 @@ services:
       retries: 15
 ```
 
-#### 2. Web Service Compose (`docker-compose.example.yml`)
-```yaml
-services:
-  web:
-    build:
-      context: .
-      target: runner
-    container_name: klassens-web
-    restart: always
-    environment:
-      - PORT=3000
-      - CONVEX_URL=http://placeholder_convex_url
-      - CONVEX_SELF_HOSTED_URL=http://placeholder_convex_url
-      - CONVEX_SELF_HOSTED_ADMIN_KEY=placeholder_admin_key
-```
 

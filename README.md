@@ -157,7 +157,7 @@ services:
     volumes:
       - /mnt/data/klassens-convex-data:/convex/data
     environment:
-      - POSTGRES_URL=postgresql://placeholder_user:placeholder_password@postgres:5432/convex
+      - POSTGRES_URL=postgresql://placeholder_user:placeholder_password@postgres:5432
       - DISABLE_BEACON=true
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:3210/version"]

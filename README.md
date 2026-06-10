@@ -90,9 +90,7 @@ Once the infrastructure containers are healthy, you need to generate admin keys 
 
 #### Step 3: Configure Domains and Cloudflare Tunnels
 Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder.us`) to stay within Universal SSL coverage:
-1. In the **Infrastructure** Compose settings in Dokploy, add the following Domains:
-   - For `convex-prod` on port `3210`: `klassens-convex.ezryder.us`
-   - For `convex-preview` on port `3210`: `klassens-convex-preview.ezryder.us`
+1. **No Domain setup in Dokploy UI needed:** The domains for `convex-prod` (`klassens-convex.ezryder.us`) and `convex-preview` (`klassens-convex-preview.ezryder.us`) are already configured via Traefik labels in `docker-compose.yml` and attached to `dokploy-network`.
 2. Update your Cloudflare Tunnel configuration (e.g., on SWE-NAS) to route traffic for:
    - `klassens-convex.ezryder.us` → `http://192.168.4.69:80` (or your Traefik port)
    - `klassens-convex-preview.ezryder.us` → `http://192.168.4.69:80`
@@ -163,6 +161,16 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.klassens-convex-prod.entrypoints=web"
+      - "traefik.http.routers.klassens-convex-prod.rule=Host(`klassens-convex.ezryder.us`)"
+      - "traefik.http.routers.klassens-convex-prod.service=klassens-convex-prod"
+      - "traefik.http.services.klassens-convex-prod.loadbalancer.server.port=3210"
 
   convex-preview:
     image: ghcr.io/get-convex/convex-backend:latest
@@ -179,6 +187,20 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.klassens-convex-preview.entrypoints=web"
+      - "traefik.http.routers.klassens-convex-preview.rule=Host(`klassens-convex-preview.ezryder.us`)"
+      - "traefik.http.routers.klassens-convex-preview.service=klassens-convex-preview"
+      - "traefik.http.services.klassens-convex-preview.loadbalancer.server.port=3210"
+
+networks:
+  dokploy-network:
+    external: true
 ```
 
 

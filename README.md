@@ -18,7 +18,6 @@ A full-stack web application built for schools and classes to easily organize, m
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Backend & Database**: [Convex](https://www.convex.dev/)
 - **Animations & Charts**: [Framer Motion](https://www.framer.com/motion/) (Custom SVG charts)
-- **Analytics & Performance**: [Vercel Analytics & Speed Insights](https://vercel.com/analytics)
 
 ## Project Structure
 
@@ -39,18 +38,61 @@ Make sure you have [Node.js](https://nodejs.org/) installed.
 ### Installation
 
 1. Clone the repository and install dependencies:
-   `ash
+   ```bash
    npm install
-   `
+   ```
 
 2. Start the Convex backend (this will prompt you to log in and set up a Convex project):
-   `ash
+   ```bash
    npx convex dev
-   `
+   ```
 
 3. In a separate terminal, start the Next.js development server:
-   `ash
+   ```bash
    npm run dev
-   `
+   ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+
+## Deployment
+
+This application is deployed on a self-hosted Ubuntu server managed via **Dokploy** with preview deployments enabled.
+
+### Dokploy Setup (Preview Deployments)
+
+To set up this project in Dokploy with build-on-server for preview deployments:
+
+1. **Create a New Compose Project**: In the Dokploy dashboard, create a new Compose project.
+2. **Repository Configuration**: Link the project to your GitHub repository and branch.
+3. **Enable Previews**: Enable preview deployments (Dokploy will automatically spin up deployments for each pull request).
+4. **Environment Variables & Build Args**:
+   Configure the following environment variables in Dokploy. Since Next.js builds are static/standalone, these variables must also be configured as **Build Arguments** in the application settings so they are inlined during build time:
+   - `NEXT_PUBLIC_CONVEX_URL`: Your Convex deployment URL (e.g., `https://your-app.convex.cloud/`)
+   - `NEXT_PUBLIC_CONVEX_SITE_URL`: Your Convex site URL (e.g., `https://your-app.convex.site/`)
+5. **Deploy**: Dokploy will clone the repository, build the Docker image on the server using the `Dockerfile`, and expose the service via Traefik.
+
+### Example Docker Compose Template
+
+Below is an example `docker-compose.yml` template for Dokploy. 
+
+> [!NOTE]
+> The actual `docker-compose.yml` is kept in `.gitignore` and is not committed to the repository.
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
+        - NEXT_PUBLIC_CONVEX_SITE_URL=${NEXT_PUBLIC_CONVEX_SITE_URL}
+    container_name: klassens-web-preview
+    restart: always
+    environment:
+      - PORT=3000
+      - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL}
+      - NEXT_PUBLIC_CONVEX_SITE_URL=${NEXT_PUBLIC_CONVEX_SITE_URL}
+```

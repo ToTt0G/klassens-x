@@ -6,4 +6,4 @@ services:
     restart: always
     environment:
       - PORT=3000
-      - CONVEX_URL=${CONVEX_URL}
+      - CONVEX_URL=http://placeholder_convex_url

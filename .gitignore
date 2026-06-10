@@ -50,3 +50,7 @@ convex_local_backend.sqlite3*
 .jules/
 AGENTS.md
 CLAUDE.md
+
+# Dokploy infra compose
+infra/docker-compose.yml
+

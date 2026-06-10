@@ -36,10 +36,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const convexUrl = process.env.CONVEX_URL!;
   return (
     <html lang="sv" className={`${epilogue.variable} ${beVietnamPro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="bg-brick-texture antialiased">
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        <ConvexClientProvider url={convexUrl}>{children}</ConvexClientProvider>
       </body>
     </html>
   );

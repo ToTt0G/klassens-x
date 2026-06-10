@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: klassens-db
+    restart: always
+    volumes:
+      - /mnt/data/klassens-convex-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=placeholder_user
+      - POSTGRES_PASSWORD=placeholder_password
+      - POSTGRES_DB=convex
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  convex-prod:
+    image: ghcr.io/get-convex/convex-backend:latest
+    container_name: klassens-convex-prod
+    restart: always
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /mnt/data/klassens-convex-data:/convex/data
+    environment:
+      - POSTGRES_URL=postgresql://placeholder_user:placeholder_password@postgres:5432/convex
+      - DISABLE_BEACON=true
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3210/version"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  convex-preview:
+    image: ghcr.io/get-convex/convex-backend:latest
+    container_name: klassens-convex-preview
+    restart: always
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    volumes:
+      - /mnt/data/klassens-convex-preview-data:/convex/data
+    environment:
+      - DISABLE_BEACON=true
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3210/version"]
+      interval: 5s
+      timeout: 3s
+      retries: 15

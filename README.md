@@ -100,21 +100,21 @@ Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder
 #### Step 4: Configure the Web Service
 1. Within the "Klassens" project in Dokploy, add a new **Compose** service named **Web**.
 2. Link this service to your GitHub repository and point to the `main` branch.
-3. Configure the **Environment Variables** in the Web service settings:
+3. Configure the **Environment Variables** in the Web service settings (both production and preview variables must be defined here, as Dokploy does not support separate environment variable sets for previews):
    - **Production variables**:
      - `CONVEX_URL` = `https://klassens-convex.ezryder.us`
      - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex.ezryder.us`
      - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-production-admin-key>`
+   - **Preview variables** (these will override production values in preview containers):
+     - `CONVEX_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
+     - `CONVEX_SELF_HOSTED_URL_PREVIEW` = `https://klassens-convex-preview.ezryder.us`
+     - `CONVEX_SELF_HOSTED_ADMIN_KEY_PREVIEW` = `<your-preview-admin-key>`
 4. Set up the **Domain** in the Web service settings:
    - Port `3000` → `klassens.ezryder.us`
-5. Enable **Preview Deployments** on the Web service settings:
-   - Configure the following **Preview Environment Variables** in Dokploy:
-     - `CONVEX_URL` = `https://klassens-convex-preview.ezryder.us`
-     - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex-preview.ezryder.us`
-     - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-preview-admin-key>`
-6. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server.
+5. Enable **Preview Deployments** on the Web service settings.
+6. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server, and pull requests trigger preview deployments.
 
-Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container will deploy Convex functions to your production backend and then run the Next.js application. For preview deployments, it does the same but deploys functions to the preview backend!
+Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container's entrypoint script (`scripts/entrypoint.sh`) checks for the presence of the `DOKPLOY_DEPLOY_URL` variable (injected by Dokploy for preview deployments). If it exists, it swaps the active database and backend endpoints to the preview versions before deploying Convex functions and launching the Next.js app!
 
 ---
 

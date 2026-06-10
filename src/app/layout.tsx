@@ -36,7 +36,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const convexUrl = process.env.CONVEX_URL!;
+  const convexUrl = process.env.CONVEX_URL || "http://127.0.0.1:3210";
   return (
     <html lang="sv" className={`${epilogue.variable} ${beVietnamPro.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body className="bg-brick-texture antialiased">

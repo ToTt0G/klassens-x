@@ -12,24 +12,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Stage 3a: Production runner (lean — no Convex CLI)
+# Stage 3: Unified runner (includes optional Convex deploy at startup)
 FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-EXPOSE 3000
-ENV PORT=3000
-CMD ["node", "server.js"]
-
-# Stage 3b: Preview runner (includes Convex deploy at startup)
-FROM node:20-alpine AS preview
 RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
@@ -42,9 +26,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=deps /app/node_modules ./node_modules
 COPY convex/ ./convex/
 COPY package.json ./
-COPY scripts/preview-entrypoint.sh ./preview-entrypoint.sh
+COPY scripts/entrypoint.sh ./entrypoint.sh
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-ENTRYPOINT ["./preview-entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

@@ -1,9 +1,12 @@
 services:
   web:
-    image: ghcr.io/tott0g/klassens-web:latest
-    pull_policy: always
+    build:
+      context: .
+      target: runner
     container_name: klassens-web
     restart: always
     environment:
       - PORT=3000
       - CONVEX_URL=http://placeholder_convex_url
+      - CONVEX_SELF_HOSTED_URL=http://placeholder_convex_url
+      - CONVEX_SELF_HOSTED_ADMIN_KEY=placeholder_admin_key

@@ -60,7 +60,7 @@ This application is self-hosted on a home Ubuntu server (`ryder@basement-server`
 
 The deployment consists of two services in a single Dokploy project called **"Klassens"**:
 1. **Infrastructure Service**: A persistent docker-compose setup containing PostgreSQL, Convex Production (connected to PostgreSQL), and Convex Preview (running standalone with SQLite).
-2. **Web Service**: The Next.js frontend, pulling a pre-built image from GHCR for production, and building on-server from the repository for preview deployments.
+2. **Web Service**: The Next.js frontend, built on-server from the repository for both production and preview deployments.
 
 ---
 
@@ -103,24 +103,18 @@ Since we are using Cloudflare free tier, we must use flat subdomains (`*.ezryder
 3. Configure the **Environment Variables** in the Web service settings:
    - **Production variables**:
      - `CONVEX_URL` = `https://klassens-convex.ezryder.us`
+     - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex.ezryder.us`
+     - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-production-admin-key>`
 4. Set up the **Domain** in the Web service settings:
    - Port `3000` → `klassens.ezryder.us`
 5. Enable **Preview Deployments** on the Web service settings:
-   - Set **Build Source** to: Git Repository (built on-server via the `Dockerfile`).
-   - Set **Docker Build Target** to: `preview`.
    - Configure the following **Preview Environment Variables** in Dokploy:
      - `CONVEX_URL` = `https://klassens-convex-preview.ezryder.us`
      - `CONVEX_SELF_HOSTED_URL` = `https://klassens-convex-preview.ezryder.us`
      - `CONVEX_SELF_HOSTED_ADMIN_KEY` = `<your-preview-admin-key>`
-6. Configure the webhook url in Dokploy to trigger when the GitHub build finishes.
+6. Configure the Github webhook in Dokploy so that pushing to `main` automatically triggers a build and deploy on-server.
 
-#### Step 5: Configure GitHub Actions
-In your GitHub repository secrets, add the following:
-- `CONVEX_SELF_HOSTED_URL`: `https://klassens-convex.ezryder.us`
-- `CONVEX_SELF_HOSTED_ADMIN_KEY`: `<your-production-admin-key>`
-- `DOKPLOY_WEBHOOK_URL`: The webhook URL copied from the Web service settings in Dokploy.
-
-Now, whenever you push to `main`, GitHub Actions will build the production container, deploy Convex functions to your self-hosted production backend, and trigger Dokploy to pull and deploy the new image. When you open a pull request, Dokploy will build the `preview` target on-server, deploy functions to your preview backend, and expose the preview URL!
+Now, whenever you push to `main` (or trigger a manual deploy in Dokploy), Dokploy will pull the latest code and build the container locally on-server using the `runner` target in the `Dockerfile`. During startup, the container will deploy Convex functions to your production backend and then run the Next.js application. For preview deployments, it does the same but deploys functions to the preview backend!
 
 ---
 
@@ -187,12 +181,15 @@ services:
 ```yaml
 services:
   web:
-    image: ghcr.io/tott0g/klassens-web:latest
-    pull_policy: always
+    build:
+      context: .
+      target: runner
     container_name: klassens-web
     restart: always
     environment:
       - PORT=3000
       - CONVEX_URL=http://placeholder_convex_url
+      - CONVEX_SELF_HOSTED_URL=http://placeholder_convex_url
+      - CONVEX_SELF_HOSTED_ADMIN_KEY=placeholder_admin_key
 ```
 

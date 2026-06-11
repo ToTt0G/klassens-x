@@ -4,6 +4,7 @@ import CreateClassForm from "@/components/CreateClassForm";
 import CyclingKlassensTitle from "@/components/CyclingKlassensTitle";
 
 export default function HomePage() {
+  // Test commit to trigger production auto-deployment
   const [step, setStep] = useState<"details" | "students" | "done">("details");
 
   return (

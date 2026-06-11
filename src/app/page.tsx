@@ -53,6 +53,7 @@ export default function HomePage() {
           { icon: "🔗", label: "Enkel delningslänk", color: "bg-secondary-fixed", rotate: "rotate-1" },
           { icon: "📊", label: "Live-dashboard", color: "bg-primary text-white", rotate: "rotate-2" },
           { icon: "❤️", label: "Av Luka Koehler", color: "bg-white", rotate: "-rotate-1", href: "https://ezryder.us" },
+          { icon: "🚀", label: "Preview Test", color: "bg-secondary-container", rotate: "rotate-3" },
         ].map((f) => {
           const className = `flex items-center gap-2 border-3 border-black px-3 py-1.5 font-[family-name:var(--font-label)] uppercase text-xs sm:text-sm font-bold neubrutalist-shadow-sm ${f.color} ${f.rotate} h-full`;
           const Inner = (
